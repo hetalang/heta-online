@@ -2,14 +2,114 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>Webpack App</title>
-        <!--<link rel="stylesheet" href="./w3-css/3/w3.css"/>
-        <link rel="stylesheet" href="./font-awesome/css/font-awesome.min.css"/>-->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Heta compiler playground</title>
     </head>
     <body>
-        <h1>Hello world!!!</h1>
-        <h2>Tip: Check your console</h2>
-        <i class="fa fa-car" style="font-size:60px;color:red;"></i>
+        <div id="topDiv" class="w3-row">
+            <div class="w3-rest w3-deep-purple w3-display-container" style="height:50px;">
+                <div class="w3-display-left" >
+                    <span class="w3-xlarge">Heta compiler <i style="font-size: 80%;">Playground</i></span>
+                </div>
+                <div class="w3-display-right">
+                  <div class="w3-bar">
+                    <i class="w3-bar-item">Heta compiler of version <span id="hc-version">0.0.0</span></i>
+                    <a href="#" class="w3-bar-item w3-button"><i class="fa fa-download"></i></a>
+                    <a href="#" class="w3-bar-item w3-button"><i class="fa fa-github"></i></a>
+                    <a href="#" class="w3-bar-item w3-button"><i class="fa fa-question"></i></a>
+                  </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainDiv" class="w3-row">
+            <div class="w3-half w3-light-grey w3-border-right w3-border-top w3-border-deep-purple" style="border-width: 2px; height:100%">
+              <div class="w3-border-bottom w3-border-deep-purple">
+                <div class="w3-bar">
+                  <a href="#" class="w3-bar-item w3-button w3-bottombar w3-border-green"><span>index.heta</span><span class="">&nbsp; &times;</span></a>
+                  <a href="#" class="w3-bar-item w3-button"><span>module1.heta</span><span class="">&nbsp; &times;</span></a>
+                  <a href="#" class="w3-bar-item w3-button"></span>module2.heta</span><span class="">&nbsp; &times;</span></a>
+                  <a href="#" class="w3-bar-item w3-button"><span>+</span></a>
+                  <a href="#" class="w3-bar-item w3-button w3-right"><i class="fa fa-plane"></i></a>
+                  <a href="#" class="w3-bar-item w3-button w3-right">platform.json</a>
+                </div>
+              </div>
+              <div class="w3-container">
+                
+                <pre style="max-height:50em;overflow:auto;font-size:80%">
+                  <code class="codePanel">
+/*
+  This modul imports different types of modules
+*/
+
+#setNS {space: one, type: abstract};
+
+include json.json type json
+
+include heta.heta type heta
+
+include yaml.yml type yaml
+
+include xlsx.xlsx type xlsx with {
+  options: { sheetNum: [0, 1], omitRows: 3 }
+}
+
+include page.md type md with {
+  options: {pageId: xxx},
+  id: yyy,
+  title: hhh
+};
+
+#export {format: YAML, filepath: yaml};
+                  </code>
+                </pre>
+              </div>
+            </div>
+            <div class="w3-half w3-light-grey w3-border-top w3-border-deep-purple" style="height:100%">
+                  <div class="w3-border-bottom w3-border-deep-purple">
+                    <div class="w3-bar">
+                      <a href="#" class="w3-bar-item w3-button w3-border-green"><span>Matlab</span></a>
+                      <a href="#" class="w3-bar-item w3-button w3-border-green"><span>Heta code</span></a>
+                      <a href="#" class="w3-bar-item w3-button w3-right w3-bottombar w3-border-green">Logs</a>
+                    </div>
+                  </div>
+                  <div class="w3-container">
+                    <pre style="max-height:50em;overflow:auto;font-size:80%">
+                      <code class="codePanel">
+$ heta build
+Running compilation with declaration file "Y:\heta-compiler\cases\0-hello-world\platform.yml"...
+[info] Builder initialized in directory "Y:\heta-compiler\cases\0-hello-world".
+[info] Platform id: "mm"
+[info] Compilation of module "src/index.heta" of type "heta"...
+[info] Reading module of type "heta" from file "Y:\heta-compiler\cases\0-hello-world\src\index.heta"...
+[info] Reading module of type "heta" from file "Y:\heta-compiler\cases\0-hello-world\src\qsp-units.heta"...
+[info] Namespace "mm" was set as "concrete"
+[info] Setting references in elements, total length 106
+[info] Checking for circular references in Records.
+[info] Checking unit's consistency.
+[info] Checking unit's terms.
+[info] Start exporting to files, total: 14.
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\heta_code" of format "heta"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_sbml_l2v4" of format "SBML"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_sbml_l3v1" of format "SBML"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_simbio" of format "Simbio"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\full_json" of format "JSON"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\full_yaml" of format "YAML"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_slv" of format "SLV"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_julia" of format "Julia"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_dbsolve" of format "DBSolve"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\mm_mrg" of format "Mrgsolve"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\matlab1" of format "Matlab"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\table" of format "XLSX"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\table2" of format "Table"...
+[info] Exporting to "Y:\heta-compiler\cases\0-hello-world\dist\graph" of format "Dot"...
+Compilation OK!
+                      </code>
+                    </pre>
+                  </div>
+            </div>
+        </div>
+
+<!--        <dev id="container" style="width: 800px; height: 600px; border: 1px solid #ccc"></dev>-->
     </body>
-    
 </html>
