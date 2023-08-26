@@ -34,36 +34,9 @@
                   <a href="#" class="w3-bar-item w3-button w3-right">platform.json</a>
                 </div>
               </div>
-              <div class="w3-container">
-                
-                <pre style="max-height:50em;overflow:auto;font-size:80%">
-                  <code class="codePanel">
-/*
-  This modul imports different types of modules
-*/
-
-#setNS {space: one, type: abstract};
-
-include json.json type json
-
-include heta.heta type heta
-
-include yaml.yml type yaml
-
-include xlsx.xlsx type xlsx with {
-  options: { sheetNum: [0, 1], omitRows: 3 }
-}
-
-include page.md type md with {
-  options: {pageId: xxx},
-  id: yyy,
-  title: hhh
-};
-
-#export {format: YAML, filepath: yaml};
-                  </code>
-                </pre>
-              </div>
+              
+              <div id="indexHetaContainer" style="height:calc(100% - 55px);display:block;"></div>
+              
             </div>
             <div class="w3-half w3-light-grey w3-border-top w3-border-deep-purple" style="height:100%">
                   <div class="w3-border-bottom w3-border-deep-purple">
@@ -109,7 +82,5 @@ Compilation OK!
                   </div>
             </div>
         </div>
-
-<!--        <dev id="container" style="width: 800px; height: 600px; border: 1px solid #ccc"></dev>-->
     </body>
 </html>
