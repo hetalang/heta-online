@@ -14,15 +14,21 @@ $(window).on('resize', updateWindowHeight);
 // document ready
 $(() => {
     updateWindowHeight();
-    monaco.editor.create(document.getElementById('indexHetaContainer'), {
+    monaco.editor.create(document.getElementById('indexHeta'), {
         value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-        language: 'javascript'
+        language: 'json'
     });
 });
 
 function updateWindowHeight(){
     let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();
     $('#mainDiv').height(h + 'px');
+
+    let h2 = $('#mainDiv').outerHeight() - $('#codeNaviLeft').outerHeight() - 2;
+    $('#codeContainerLeft').height(h2 + 'px');
+
+    let h3 = $('#mainDiv').outerHeight() - $('#codeNaviRight').outerHeight() - 2;
+    $('#codeContainerRight').height(h3 + 'px');
 }
 
 /*
