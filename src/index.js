@@ -4,8 +4,12 @@ import 'font-awesome/css/font-awesome.min.css';
 
 // Auxilary
 import $ from 'jquery';
+window.$ = $;
+
 //import * as monaco from 'monaco-editor';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
+import HetaPanelContainer from './heta-panel';
 
 $(window).on('resize', updateWindowHeight);
 
@@ -14,10 +18,15 @@ $(window).on('resize', updateWindowHeight);
 // document ready
 $(() => {
     updateWindowHeight();
-    monaco.editor.create(document.getElementById('indexHeta'), {
-        value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-        language: 'json'
-    });
+
+    window.hetaPanelContainer = HetaPanelContainer.createWithDefaults();
+
+    monaco.editor.create(document.getElementById('consoleLog'), {
+      value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+      language: 'json',
+      readOnly: true,
+      mode: 'dark'
+  });
 });
 
 function updateWindowHeight(){
