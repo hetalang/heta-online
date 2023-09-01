@@ -32,13 +32,17 @@ class HetaEditorsCollection {
     
         this.hetaEditorsStorage = new Map();
         // set events
-        let counter = 0;
-        $('#newButton').on('change', (evt) => {
-            let format = FORMATS[evt.target.value];
-            if (format==undefined) throw new Error('Unknown Heta module format.');
-            this.addEditor(`module${counter++}.${format.fileType}`, format.template, format.fileType);
-            evt.target.value = '';
-        })
+        this.count = 0;
+        $('#newButton').on('change', (evt) => this.addModule(evt))
+    }
+    addModule(evt) {
+        let format = FORMATS[evt.target.value];
+        if (format===undefined) throw new Error('Unknown Heta module format.');
+        // prompt of module name
+        let fileName = window.prompt('File name',`module${this.count++}`);
+        
+        this.addEditor(`${fileName}.${format.fileType}`, format.template, format.fileType);
+        evt.target.value = '';
     }
     static createWithDefaults() {
         let hpc = new HetaEditorsCollection();
@@ -67,11 +71,14 @@ class HetaEditorsCollection {
         $(panel.editorContainer).css('display', 'block');
     }
     deleteEditor(id) {
-        let panel = this.hetaEditorsStorage.get(id);
-        $(panel.navigationButton).remove();
-        $(panel.editorContainer).remove();
-        this.hetaEditorsStorage.delete(id);
-        this.showEditor('index.heta');
+        let isOk = window.confirm(`"${id}" file will be deleted.\nAre you sure?`)
+        if (isOk) {
+            let panel = this.hetaEditorsStorage.get(id);
+            $(panel.navigationButton).remove();
+            $(panel.editorContainer).remove();
+            this.hetaEditorsStorage.delete(id);
+            this.showEditor('index.heta');
+        }
     }
 }
 
