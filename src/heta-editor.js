@@ -22,27 +22,14 @@ const FORMATS = {
 // class storing HetaEditors
 class HetaEditorsCollection {
     constructor() {
-        // left panel
-        this.leftNavigationPanel = $('#codeNaviLeft')[0];
-        this.leftCodePanel = $('#codeContainerLeft')[0];
-        
-        // right panel
-        this.rightNavigationPanel = $('#codeNaviRight')[0];
-        this.rightCodePanel = $('#codeContainerRight')[0];
-    
         this.hetaEditorsStorage = new Map();
         // set events
         this.count = 0;
-        $('#newButton').on('change', (evt) => this.addModule(evt))
-    }
-    addModule(evt) {
-        let format = FORMATS[evt.target.value];
-        if (format===undefined) throw new Error('Unknown Heta module format.');
-        // prompt of module name
-        let fileName = window.prompt('File name',`module${this.count++}`);
-        
-        this.addEditor(`${fileName}.${format.fileType}`, format.template, format.fileType);
-        evt.target.value = '';
+        $('#newButton').on('change', (evt) => { 
+            let format = FORMATS[evt.target.value];
+            this.addUserEditor(format);
+            evt.target.value = '';
+        })
     }
     static createWithDefaults() {
         let hpc = new HetaEditorsCollection();
@@ -52,33 +39,32 @@ class HetaEditorsCollection {
 
         return hpc;
     }
-    addEditor(id, initialCode=DEFAULT_HETA_TEMPLATE, type='HetaCode', toDelete=true, rightSide=false) {
+    get defaultEditor() {
+        return this.hetaEditorsStorage.get('index.heta');
+    }
+    addUserEditor(format) {
+        if (format===undefined) throw new Error('Unknown Heta module format.');
+        // prompt of module name
+        let title = 'File name';
+        let fileName = `module${this.count++}`;
+        do {
+            fileName = window.prompt(title, fileName);
+            title = `"${fileName}.${format.fileType}" already exist. Choose another name.`
+        
+        } while (this.hetaEditorsStorage.has(`${fileName}.${format.fileType}`))
+        
+        this.addEditor(`${fileName}.${format.fileType}`, format.template, format.fileType);
+    }
+    addEditor(id, initialCode, type, toDelete=true, rightSide=false) {
         // add to storage
         let hp = new HetaEditor(id, initialCode, type, toDelete, rightSide);
         hp._parent = this;
         this.hetaEditorsStorage.set(id, hp);
-        this.showEditor(id);
+        hp.show();
     }
     hideEditors() {
         $('.hetaModuleBtn').removeClass('w3-bottombar w3-border-green');
         $('.hetaModuleContainer').css('display','none');
-    }
-    showEditor(id) {
-        this.hideEditors();
-        let panel = this.hetaEditorsStorage.get(id);
-
-        $(panel.navigationButton).addClass('w3-bottombar w3-border-green');
-        $(panel.editorContainer).css('display', 'block');
-    }
-    deleteEditor(id) {
-        let isOk = window.confirm(`"${id}" file will be deleted.\nAre you sure?`)
-        if (isOk) {
-            let panel = this.hetaEditorsStorage.get(id);
-            $(panel.navigationButton).remove();
-            $(panel.editorContainer).remove();
-            this.hetaEditorsStorage.delete(id);
-            this.showEditor('index.heta');
-        }
     }
 }
 
@@ -97,14 +83,15 @@ class HetaEditor {
         }
 
         // add events to module
-        $(this.navigationButton).find('.hetaModuleName').on('click', () => {
-            this._parent.showEditor(id);
-        });
+        $(this.navigationButton).find('.hetaModuleName').on('click', () => this.show());
         if (toDelete) {
             $('<span class="hetaModuleCloseBtn">&nbsp; &times;</span>')
                 .appendTo(this.navigationButton)
                 .on('click', () => {
-                    this._parent.deleteEditor(id);
+                    let isOk = window.confirm(`"${this.id}" file will be deleted.\nAre you sure?`)
+                    if (isOk) {                    
+                        this.delete();
+                    }
                 });
         }
 
@@ -114,6 +101,18 @@ class HetaEditor {
             language: type ,
             readOnly: readOnly
         });
+    }
+    show() {
+        this._parent.hideEditors();
+
+        $(this.navigationButton).addClass('w3-bottombar w3-border-green');
+        $(this.editorContainer).css('display', 'block');
+    }
+    delete() {
+        $(this.navigationButton).remove();
+        $(this.editorContainer).remove();
+        this._parent.hetaEditorsStorage.delete(this.id);
+        this._parent.defaultEditor.show();
     }
 }
 

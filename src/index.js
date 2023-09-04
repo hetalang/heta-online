@@ -4,7 +4,7 @@ import 'font-awesome/css/font-awesome.min.css';
 
 // Auxilary
 import $ from 'jquery';
-window.$ = $;
+//window.$ = $;
 
 //import * as monaco from 'monaco-editor';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
