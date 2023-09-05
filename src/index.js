@@ -1,3 +1,7 @@
+import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
+import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
+import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
+
 // Add styles and fonts
 import 'w3-css/w3.css';
 import 'font-awesome/css/font-awesome.min.css';
@@ -19,23 +23,33 @@ $(window).on('resize', updateWindowHeight);
 $(() => {
     updateWindowHeight();
 
-    window.hetaEditorsCollection = HetaEditorsCollection.createWithDefaults();
+    // heta modules collection
+    let hmc = new HetaEditorsCollection({
+      newButton: '#newButton',
+      panel: '#leftPanel',
+      defaultEditor: 'index.heta'
+    });
+    hmc.addEditor('platform.json', PLATFORM_JSON_TEMPLATE, 'json', false, true);
+    hmc.addEditor('qsp-units.heta', QSP_UNITS_HETA_TEMPLATE, 'heta');
+    hmc.addEditor('index.heta', INDEX_HETA_TEMPLATE, 'heta', false, false);
 
-    monaco.editor.create(document.getElementById('consoleLog'), {
-      value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-      language: 'json',
-      readOnly: true,
-      mode: 'dark'
-  });
+    // heta exports collection
+    let hee = new HetaEditorsCollection({
+      panel: '#rightPanel',
+      defaultEditor: 'output.log'
+    });
+    hee.addEditor('output.json', 'I am JsonExport', 'json', false, false);
+    hee.addEditor('output.m', 'I am MatlabExport', 'json', false, false);
+    hee.addEditor('output.log', 'I am Logger', 'log', false, true);
 });
 
 function updateWindowHeight(){
     let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();
     $('#mainDiv').height(h + 'px');
 
-    let h2 = $('#mainDiv').outerHeight() - $('#codeNaviLeft').outerHeight() - 2;
-    $('#codeContainerLeft').height(h2 + 'px');
+    let h2 = $('#mainDiv').outerHeight() - $('#leftPanel .codeNavigation').outerHeight() - 2;
+    $('#leftPanel .codeContainer').height(h2 + 'px');
 
-    let h3 = $('#mainDiv').outerHeight() - $('#codeNaviRight').outerHeight() - 2;
-    $('#codeContainerRight').height(h3 + 'px');
+    let h3 = $('#mainDiv').outerHeight() - $('#rightPanel .codeNavigation').outerHeight() - 2;
+    $('#rightPanel .codeContainer').height(h3 + 'px');
 }
