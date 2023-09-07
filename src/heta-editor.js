@@ -9,12 +9,153 @@ import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-const FORMATS = {
-    json: {fileType: 'json', template: DEFAULT_JSON_TEMPLATE},
-    heta: {fileType: 'heta', template: DEFAULT_HETA_TEMPLATE},
-    csv: {fileType: 'csv', template: DEFAULT_CSV_TEMPLATE},
-    yaml: {fileType: 'yaml', template: DEFAULT_YAML_TEMPLATE},
-    xml: {fileType: 'xml', template: DEFAULT_XML_TEMPLATE},
+monaco.languages.register({id: 'heta'});
+monaco.languages.setMonarchTokensProvider('heta', {
+    defaultToken: 'invalid',
+    keywords: ['include', 'type', 'with', 'namespace', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
+    //tokenPostfix: ".yaml",
+  brackets: [
+    { token: "delimiter.bracket", open: "{", close: "}" },
+    { token: "delimiter.square", open: "[", close: "]" }
+  ],
+  ws: / \t\r\n/,
+  numberInteger: /(?:0|[+-]?[0-9]+)/,
+  numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:e[-+][1-9][0-9]*)?/,
+  numberOctal: /0o[0-7]+/,
+  numberHex: /0x[0-9a-fA-F]+/,
+  numberInfinity: /[+-]?\.(?:inf|Inf|INF)/,
+  numberNaN: /\.(?:nan|Nan|NAN)/,
+  numberDate: /\d{4}-\d\d-\d\d([Tt ]\d\d:\d\d:\d\d(\.\d+)?(( ?[+-]\d\d?(:\d\d)?)|Z)?)?/,
+  escapes: /\\(?:[btnfr\\"']|[0-7][0-7]?|[0-3][0-7]{2})/,
+  actionString: /[#][a-zA-Z]+[a-zA-Z0-9_]*/,
+  tokenizer: {
+    root: [
+      { include: "@whitespace" },
+      { include: "@comment" },
+      //[/[-?:](?= )/, "operators"],
+      //{ include: "@flowCollections" },
+      { include: "@actionStatement" },
+      //{ include: "@blockStyle" },
+      //[/@numberInteger(?![ \t]*\S+)/, "number"],
+      //[/@numberFloat(?![ \t]*\S+)/, "number.float"],
+      //[/@numberOctal(?![ \t]*\S+)/, "number.octal"],
+      //[/@numberHex(?![ \t]*\S+)/, "number.hex"],
+      //[/@numberInfinity(?![ \t]*\S+)/, "number.infinity"],
+      //[/@numberNaN(?![ \t]*\S+)/, "number.nan"],
+      //[/(".*?"|'.*?'|[^#'"]*?)([ \t]*)(:)( |$)/, ["type", "white", "operators", "white"]],
+      //{ include: "@flowScalars" },
+      /*[
+        /.+?(?=(\s+#|$))/,
+        {
+          cases: {
+            "@keywords": "keyword",
+            "@default": "string"
+          }
+        }
+      ]*/
+    ],
+    actionStatement: [
+        [/.+(?!\;)/, '@rematch', '@statementComponents'],
+        [ /\;/, 'delimiter'],
+    ],
+    statementComponents: [
+        { include: "@whitespace" },
+        [/@actionString/, 'keyword'],
+        [/\{/, 'bracket', '@object'],
+    ],
+    object: [
+      { include: "@whitespace" },
+      { include: "@comment" },
+      [/[\}]/, "bracket", "@pop"],
+      [/,/, "delimiter.comma"],
+      [/:(?= )/, "operators"],
+      [/(?:".*?"|'.*?'|[^,\{\[]+?)(?=: )/, "type"],
+      { include: "@flowCollections" },
+      { include: "@flowScalars" },
+      { include: "@flowNumber" },
+      [
+        /[^\},]+/,
+        {
+          cases: {
+            //"@keywords": "keyword",
+            "@default": "string"
+          }
+        }
+      ]
+    ],
+    array: [
+      { include: "@whitespace" },
+      { include: "@comment" },
+      [/\]/, "@brackets", "@pop"],
+      [/,/, "delimiter.comma"],
+      { include: "@flowCollections" },
+      { include: "@flowScalars" },
+      { include: "@flowNumber" },
+      [
+        /[^\],]+/,
+        {
+          cases: {
+            "@keywords": "keyword",
+            "@default": "string"
+          }
+        }
+      ]
+    ],
+    multiString: [[/^( +).+$/, "string", "@multiStringContinued.$1"]],
+    multiStringContinued: [
+      [
+        /^( *).+$/,
+        {
+          cases: {
+            "$1==$S2": "string",
+            "@default": { token: "@rematch", next: "@popall" }
+          }
+        }
+      ]
+    ],
+    whitespace: [[/[ \t\r\n]+/, "white"]],
+    comment: [[/\/\/.*$/, "comment"]],
+    flowCollections: [
+      [/\[/, "@brackets", "@array"],
+      [/\{/, "@brackets", "@object"]
+    ],
+    flowScalars: [
+      [/"([^"\\]|\\.)*$/, "string.invalid"],
+      [/'([^'\\]|\\.)*$/, "string.invalid"],
+      [/'[^']*'/, "string"],
+      [/"/, "string", "@doubleQuotedString"]
+    ],
+    doubleQuotedString: [
+      [/[^\\"]+/, "string"],
+      [/@escapes/, "string.escape"],
+      [/\\./, "string.escape.invalid"],
+      [/"/, "string", "@pop"]
+    ],
+    blockStyle: [[/[>|][0-9]*[+-]?$/, "operators", "@multiString"]],
+    flowNumber: [
+      [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
+      [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
+      [/@numberOctal(?=[ \t]*[,\]\}])/, "number.octal"],
+      [/@numberHex(?=[ \t]*[,\]\}])/, "number.hex"],
+      [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
+      [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
+    ],
+  }
+});
+
+const FORMATS = { // + Exports/Modules
+    json: {extension: 'json', language: 'json', template: DEFAULT_JSON_TEMPLATE}, // JSON / json
+    heta: {extension: 'heta', language: 'heta', template: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
+    csv: {extension: 'csv', language: 'plaintext', template: DEFAULT_CSV_TEMPLATE}, // Table / table
+    yaml: {extension: 'yml', language: 'yaml', template: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
+    sbml: {extension: 'xml', language: 'xml', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
+
+    markdown: {extension: 'md', language: 'markdown'},
+    mrgsolve: {extension: 'c', language: 'c'}, // Mrgsolve
+    julia: {extension: 'jl', language: 'julia'}, // Julia
+    matlab: {extension: 'm', language: 'plaintext'}, // Matlab
+    simbio: {extension: 'm', language: 'plaintext'}, // Simbio
+    dbsolve: {extension: 'slv', language: 'plaintext'}, // DBSolve
 }
 
 // class storing HetaEditors
@@ -41,11 +182,11 @@ class HetaEditorsCollection {
         let fileName = `module${this.count++}`;
         do {
             fileName = window.prompt(title, fileName);
-            title = `"${fileName}.${format.fileType}" already exist. Choose another name.`
+            title = `"${fileName}.${format.extension}" already exist. Choose another name.`
         
-        } while (this.hetaEditorsStorage.has(`${fileName}.${format.fileType}`))
+        } while (this.hetaEditorsStorage.has(`${fileName}.${format.extension}`))
         
-        this.addEditor(`${fileName}.${format.fileType}`, format.template, format.fileType);
+        this.addEditor(`${fileName}.${format.extension}`, format.template, format.language);
     }
     addEditor(id, initialCode, type, toDelete=true, rightSide=false) {
         // add to storage
@@ -90,7 +231,7 @@ class HetaEditor {
         // add editor
         this.monacoEditor = monaco.editor.create(this.editorContainer, {
             value: initialCode,
-            language: type ,
+            language: type,
             readOnly: readOnly
         });
     }

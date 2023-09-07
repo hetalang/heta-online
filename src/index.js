@@ -8,10 +8,7 @@ import 'font-awesome/css/font-awesome.min.css';
 
 // Auxilary
 import $ from 'jquery';
-//window.$ = $;
-
-//import * as monaco from 'monaco-editor';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+//window.$ = $; // set as global
 
 import HetaEditorsCollection from './heta-editor';
 
