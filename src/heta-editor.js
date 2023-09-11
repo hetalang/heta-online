@@ -11,7 +11,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 monaco.languages.register({id: 'heta'});
 monaco.languages.setMonarchTokensProvider('heta', {
-    defaultToken: 'invalid',
+  defaultToken: 'invalid',
     keywords: ['include', 'type', 'with', 'namespace', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
     //tokenPostfix: ".yaml",
   brackets: [
@@ -57,13 +57,13 @@ monaco.languages.setMonarchTokensProvider('heta', {
     ],
     includeStatement2: [
         { include: "@whitespace" },
-        [/(type)(\w*)/, ['keyword', 'string']],
-        //[/(with)/, 'keyword', '@object'],
+        [/(type )(\w*)/, ['keyword', 'string']],
+        [/(with )({)/, ['keyword', 'bracket'], '@object'],        
         ['', 'string', '@popall']
     ],
     actionStatement: [
         { include: "@whitespace" },
-        ['', 'string', '@statementComponents'],
+        ['(?!^$)', 'string', '@statementComponents'], // not an empty string
     ],
     statementComponents: [
         { include: "@comment" },
