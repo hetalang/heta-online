@@ -18,28 +18,25 @@ monaco.languages.setMonarchTokensProvider('heta', {
     { token: "delimiter.bracket", open: "{", close: "}" },
     { token: "delimiter.square", open: "[", close: "]" }
   ],
-  ws: / \t\r\n/,
+  ws: /[ \t\r\n]/,
   numberInteger: /(?:0|[+-]?[0-9]+)/,
-  numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:e[-+][1-9][0-9]*)?/,
-  numberOctal: /0o[0-7]+/,
-  numberHex: /0x[0-9a-fA-F]+/,
-  numberInfinity: /[+-]?\.(?:inf|Inf|INF)/,
-  numberNaN: /\.(?:nan|Nan|NAN)/,
-  numberDate: /\d{4}-\d\d-\d\d([Tt ]\d\d:\d\d:\d\d(\.\d+)?(( ?[+-]\d\d?(:\d\d)?)|Z)?)?/,
+  numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:[eE][-+][1-9][0-9]*)?/,
+  numberInfinity: /[+-]?Infinity/,
+  numberNaN: /NaN/,
+  mathExpr: /[\w\s*\+\-\*\/\^\(\)\.\>\<\=\!\?\,]+/,
   escapes: /\\(?:[btnfr\\"']|[0-7][0-7]?|[0-3][0-7]{2})/,
-  actionString: /[#][a-zA-Z]+[a-zA-Z0-9_]*/,
+  idProp: /[a-zA-Z]+\w*/,
+  actionProp: /#[a-zA-Z]+\w*/,
+  classProp: /\@[a-zA-Z]+\w*/,
+  filepathFormat: /[\w\/\\\.\-]*/,
   tokenizer: {
     root: [
-      { include: "@whitespace" },
       { include: "@comment" },
-      //[/[-?:](?= )/, "operators"],
-      //{ include: "@flowCollections" },
+      { include: "@whitespace" },
+      [/include/, 'keyword', '@includeStatement'],
       { include: "@actionStatement" },
-      //{ include: "@blockStyle" },
       //[/@numberInteger(?![ \t]*\S+)/, "number"],
       //[/@numberFloat(?![ \t]*\S+)/, "number.float"],
-      //[/@numberOctal(?![ \t]*\S+)/, "number.octal"],
-      //[/@numberHex(?![ \t]*\S+)/, "number.hex"],
       //[/@numberInfinity(?![ \t]*\S+)/, "number.infinity"],
       //[/@numberNaN(?![ \t]*\S+)/, "number.nan"],
       //[/(".*?"|'.*?'|[^#'"]*?)([ \t]*)(:)( |$)/, ["type", "white", "operators", "white"]],
@@ -54,14 +51,35 @@ monaco.languages.setMonarchTokensProvider('heta', {
         }
       ]*/
     ],
+    includeStatement: [
+        { include: "@whitespace" },
+        [/@filepathFormat/, 'string', '@includeStatement2'], // filepath
+    ],
+    includeStatement2: [
+        { include: "@whitespace" },
+        [/(type)(\w*)/, ['keyword', 'string']],
+        //[/(with)/, 'keyword', '@object'],
+        ['', 'string', '@popall']
+    ],
     actionStatement: [
-        [/.+(?!\;)/, '@rematch', '@statementComponents'],
-        [ /\;/, 'delimiter'],
+        { include: "@whitespace" },
+        ['', 'string', '@statementComponents'],
     ],
     statementComponents: [
+        { include: "@comment" },
         { include: "@whitespace" },
-        [/@actionString/, 'keyword'],
-        [/\{/, 'bracket', '@object'],
+        [/\'{3}/, 'comment', '@notes'], // TOFIX: not working
+        [/'/, 'string', '@title'],      // title
+        [/@classProp/, 'keyword'], // @Class
+        [/@actionProp/, 'keyword'], // #action
+        [/(?![.:\]])(=@ws*)(@numberFloat|@numberInteger|@numberInfinity|@numberNaN)/, ['operator', 'number.float']], // = 1.1
+        [/([.:]=@ws*)(@mathExpr)/, ['operator', 'string']], // .= xxx, := xxx
+        [/(\[@idProp?\]=@ws*)(@mathExpr)/, ['operator', 'string']], // []= xxx, [evt]= xxx        
+        [/(?=(?:@ws|^|\*\/))@idProp/, 'identifier'], // id
+        [/@idProp::@idProp/, 'identifier'], // namespace::id
+        [/@idProp::\*/, 'identifier'], // namespace::*
+        [/\{/, 'bracket', '@object'], // dictionary
+        [ /\;/, 'delimiter', '@pop'], // end
     ],
     object: [
       { include: "@whitespace" },
@@ -131,12 +149,21 @@ monaco.languages.setMonarchTokensProvider('heta', {
       [/\\./, "string.escape.invalid"],
       [/"/, "string", "@pop"]
     ],
-    blockStyle: [[/[>|][0-9]*[+-]?$/, "operators", "@multiString"]],
+    title: [
+      [/[^']+/, "string"],
+      //[/@escapes/, "string.escape"],
+      //[/\\./, "string.escape.invalid"],
+      [/'/, "string", "@pop"]
+    ],
+    notes: [
+      [/.*'{3}/, "comment", '@pop'],
+      //[/@escapes/, "string.escape"],
+      //[/\\./, "string.escape.invalid"],
+      //[/\'{3}/, "comment", "@pop"],
+    ],
     flowNumber: [
       [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
       [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
-      [/@numberOctal(?=[ \t]*[,\]\}])/, "number.octal"],
-      [/@numberHex(?=[ \t]*[,\]\}])/, "number.hex"],
       [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
       [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
     ],
