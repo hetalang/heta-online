@@ -16,7 +16,8 @@ monaco.languages.setMonarchTokensProvider('heta', {
     //tokenPostfix: ".yaml",
   brackets: [
     { token: "delimiter.bracket", open: "{", close: "}" },
-    { token: "delimiter.square", open: "[", close: "]" }
+    { token: "delimiter.square", open: "[", close: "]" },
+    { token: 'comment', open: '/*', close: '*/' }
   ],
   ws: /[ \t\r\n]/,
   numberInteger: /(?:0|[+-]?[0-9]+)/,
@@ -28,12 +29,14 @@ monaco.languages.setMonarchTokensProvider('heta', {
   idProp: /[a-zA-Z]+\w*/,
   actionProp: /#[a-zA-Z]+\w*/,
   classProp: /\@[a-zA-Z]+\w*/,
-  filepathFormat: /[\w\/\\\.\-]*/,
+  filepathFormat: /[\w\/\\\.\-]+/,
   tokenizer: {
     root: [
       { include: "@comment" },
+      { include: '@multilineCommentStart' },
       { include: "@whitespace" },
-      [/include/, 'keyword', '@includeStatement'],
+      [/(?=include )/, 'keyword', '@includeStatement'],
+      [/(?=namespace )/, 'keyword', 'namespaceBlock'],
       { include: "@actionStatement" },
       //[/@numberInteger(?![ \t]*\S+)/, "number"],
       //[/@numberFloat(?![ \t]*\S+)/, "number.float"],
@@ -53,21 +56,35 @@ monaco.languages.setMonarchTokensProvider('heta', {
     ],
     includeStatement: [
         { include: "@whitespace" },
-        [/@filepathFormat/, 'string', '@includeStatement2'], // filepath
-    ],
-    includeStatement2: [
-        { include: "@whitespace" },
+        { include: '@multilineCommentStart' },
+        [/(include )(@filepathFormat?)/, ['keyword', 'string']],
         [/(type )(\w*)/, ['keyword', 'string']],
-        [/(with )({)/, ['keyword', 'bracket'], '@object'],        
-        ['', 'string', '@popall']
+        [/with /, 'keyword', '@withContent'],
+        ['', 'invalid', '@pop'],
+    ],
+    withContent: [
+        [/{/, 'bracket', '@object'],
+        ['', 'invalid', '@pop'],
+    ],
+    namespaceBlock: [
+      [/(namespace +)(\w* +)(begin)/, ['keyword', 'string', 'keyword']],
+      [/end(?!\w)/, 'keyword', '@pop'],
+      { include: "@namespaceContent" },
+    ],
+    namespaceContent: [
+      { include: "@comment" },
+      { include: '@multilineCommentStart' },
+      { include: "@whitespace" },
+      { include: "@actionStatement" },
     ],
     actionStatement: [
         { include: "@whitespace" },
         ['(?!^$)', 'string', '@statementComponents'], // not an empty string
     ],
     statementComponents: [
-        { include: "@comment" },
         { include: "@whitespace" },
+        { include: "@comment" },
+        { include: '@multilineCommentStart' },
         [/\'{3}/, 'comment', '@notes'], // TOFIX: not working
         [/'/, 'string', '@title'],      // title
         [/@classProp/, 'keyword'], // @Class
@@ -84,6 +101,7 @@ monaco.languages.setMonarchTokensProvider('heta', {
     object: [
       { include: "@whitespace" },
       { include: "@comment" },
+      { include: '@multilineCommentStart' },
       [/[\}]/, "bracket", "@pop"],
       [/,/, "delimiter.comma"],
       [/:(?= )/, "operators"],
@@ -104,6 +122,7 @@ monaco.languages.setMonarchTokensProvider('heta', {
     array: [
       { include: "@whitespace" },
       { include: "@comment" },
+      { include: '@multilineCommentStart' },
       [/\]/, "@brackets", "@pop"],
       [/,/, "delimiter.comma"],
       { include: "@flowCollections" },
@@ -133,6 +152,15 @@ monaco.languages.setMonarchTokensProvider('heta', {
     ],
     whitespace: [[/[ \t\r\n]+/, "white"]],
     comment: [[/\/\/.*$/, "comment"]],
+    multilineCommentStart: [
+      [/\/\*/, {token: 'comment', bracket: '@open', next: '@multilineComment'}],
+    ],
+    multilineComment: [
+      [ /[^\/*]+/, 'comment' ],
+      // [ /\/\*/, 'comment', '@push' ],    // nested comment
+      [ /\*\//, {token: 'comment', bracket: '@close', next: '@pop'} ],
+      [/[\/*]/, 'comment' ]
+    ],
     flowCollections: [
       [/\[/, "@brackets", "@array"],
       [/\{/, "@brackets", "@object"]
