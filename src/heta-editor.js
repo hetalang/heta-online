@@ -24,7 +24,7 @@ monaco.languages.setMonarchTokensProvider('heta', {
   numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:[eE][-+][1-9][0-9]*)?/,
   numberInfinity: /[+-]?Infinity/,
   numberNaN: /NaN/,
-  mathExpr: /[\w\s*\+\-\*\/\^\(\)\.\>\<\=\!\?\,]+/,
+  mathSymbols: /[\w\s*\+\-\*\/\^\(\)\.\>\<\=\!\?\,]/,
   escapes: /\\(?:[btnfr\\"']|[0-7][0-7]?|[0-3][0-7]{2})/,
   idProp: /[a-zA-Z]+\w*/,
   actionProp: /#[a-zA-Z]+\w*/,
@@ -36,7 +36,8 @@ monaco.languages.setMonarchTokensProvider('heta', {
       { include: '@multilineCommentStart' },
       { include: "@whitespace" },
       [/(?=include )/, 'keyword', '@includeStatement'],
-      [/(?=namespace )/, 'keyword', 'namespaceBlock'],
+      [/namespace /, 'keyword', '@namespaceBlock'],
+      [/block /, 'keyword', '@defaultBlock'],
       { include: "@actionStatement" },
       //[/@numberInteger(?![ \t]*\S+)/, "number"],
       //[/@numberFloat(?![ \t]*\S+)/, "number.float"],
@@ -67,11 +68,15 @@ monaco.languages.setMonarchTokensProvider('heta', {
         ['', 'invalid', '@pop'],
     ],
     namespaceBlock: [
-      [/(namespace +)(\w* +)(begin)/, ['keyword', 'string', 'keyword']],
-      [/end(?!\w)/, 'keyword', '@pop'],
-      { include: "@namespaceContent" },
+      [/begin/, 'keyword', '@block'],
+      [/@idProp/, 'string'],
     ],
-    namespaceContent: [
+    defaultBlock: [
+      [/begin/, 'keyword', '@block'],
+      [/{/, 'bracket', '@object'],
+    ],
+    block: [
+      [/end(?!\w)/, 'keyword', '@popall'],
       { include: "@comment" },
       { include: '@multilineCommentStart' },
       { include: "@whitespace" },
@@ -85,16 +90,17 @@ monaco.languages.setMonarchTokensProvider('heta', {
         { include: "@whitespace" },
         { include: "@comment" },
         { include: '@multilineCommentStart' },
-        [/\'{3}/, 'comment', '@notes'], // TOFIX: not working
-        [/'/, 'string', '@title'],      // title
+        [/\'{3}/, 'comment', '@notes'], // not working
+        [/\'/, 'string', '@title'],      // title
         [/@classProp/, 'keyword'], // @Class
         [/@actionProp/, 'keyword'], // #action
         [/(?![.:\]])(=@ws*)(@numberFloat|@numberInteger|@numberInfinity|@numberNaN)/, ['operator', 'number.float']], // = 1.1
-        [/([.:]=@ws*)(@mathExpr)/, ['operator', 'string']], // .= xxx, := xxx
-        [/(\[@idProp?\]=@ws*)(@mathExpr)/, ['operator', 'string']], // []= xxx, [evt]= xxx        
-        [/(?=(?:@ws|^|\*\/))@idProp/, 'identifier'], // id
+        [/[.:]=@ws*/, 'operator', '@mathExpr'], // .= xxx, := xxx
+        [/\[@idProp?\]=@ws*/, 'operator', '@mathExpr'], // []= xxx, [evt]= xxx
+        
         [/@idProp::@idProp/, 'identifier'], // namespace::id
         [/@idProp::\*/, 'identifier'], // namespace::*
+        [/@idProp/, 'identifier'], // id
         [/\{/, 'bracket', '@object'], // dictionary
         [ /\;/, 'delimiter', '@pop'], // end
     ],
@@ -161,6 +167,12 @@ monaco.languages.setMonarchTokensProvider('heta', {
       [ /\*\//, {token: 'comment', bracket: '@close', next: '@pop'} ],
       [/[\/*]/, 'comment' ]
     ],
+    mathExpr: [
+      //{include: '@whitespace'},
+      [/@mathSymbols+/, 'string'],
+      ['^$', 'string'],
+      ['', 'string', '@pop'],
+    ],
     flowCollections: [
       [/\[/, "@brackets", "@array"],
       [/\{/, "@brackets", "@object"]
@@ -179,15 +191,12 @@ monaco.languages.setMonarchTokensProvider('heta', {
     ],
     title: [
       [/[^']+/, "string"],
-      //[/@escapes/, "string.escape"],
-      //[/\\./, "string.escape.invalid"],
       [/'/, "string", "@pop"]
     ],
     notes: [
-      [/.*'{3}/, "comment", '@pop'],
-      //[/@escapes/, "string.escape"],
-      //[/\\./, "string.escape.invalid"],
-      //[/\'{3}/, "comment", "@pop"],
+      [/[^']+/, 'comment'],
+      [/'{3}/, "comment", "@pop"],
+      [/'/, 'comment']
     ],
     flowNumber: [
       [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
