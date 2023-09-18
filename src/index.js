@@ -14,11 +14,16 @@ import HetaEditorsCollection from './heta-editor';
 
 $(window).on('resize', updateWindowHeight);
 
-// Events
+import hetaPackage from 'heta-compiler/package';
+import { Container } from 'heta-compiler/src/browser';
 
 // document ready
 $(() => {
     updateWindowHeight();
+    $('#hc-version').text(hetaPackage.version);
+    $('#hc-github').attr('href', hetaPackage.repository.url);
+    $('#hc-homepage').attr('href', hetaPackage.homepage);
+    //console.log(hetaPackage);
 
     // heta modules collection
     let hmc = new HetaEditorsCollection({
