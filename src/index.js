@@ -15,7 +15,7 @@ import HetaEditorsCollection from './heta-editor';
 $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
-import { Container } from 'heta-compiler/src/browser';
+import build from './build';
 
 // document ready
 $(() => {
@@ -40,9 +40,12 @@ $(() => {
       panel: '#rightPanel',
       defaultEditor: 'output.log'
     });
-    hee.addEditor('output.json', 'I am JsonExport', 'json', false, false);
-    hee.addEditor('output.m', 'I am MatlabExport', 'json', false, false);
+    //hee.addEditor('output.json', 'I am JsonExport', 'json', false, false);
+    //hee.addEditor('output.m', 'I am MatlabExport', 'json', false, false);
     hee.addEditor('output.log', 'I am Logger', 'log', false, true);
+
+    // build button
+    $('#buildBtn').on('click', () => build(hmc, hee));
 });
 
 function updateWindowHeight(){
