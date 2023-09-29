@@ -15,9 +15,14 @@ const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader
 
 
 const config = {
-    entry: './src/index.js',
+    entry: {
+        'app': './src/index.js',
+        //'build': './src/build.js',
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
+        filename: 'js/[name].[contenthash].js',
+        libraryTarget: 'umd',
     },
     devServer: {
         open: true,

@@ -1,19 +1,28 @@
-import { Container } from 'heta-compiler/src/browser';
-import { Transport } from 'heta-compiler/src/logger';
-import * as path from 'path';
+import { Container, ModuleSystem, Transpot} from 'heta-compiler/src/browser';
+import path from 'path';
 
-function build(hmc, hee) { // modules, exports
-    //console.log(hmc);
-    let coreDirname = '.';
+self.requestFileSystemSync = self.webkitRequestFileSystemSync ||
+    self.requestFileSystemSync;
+self.resolveLocalFileSystemSyncURL = self.webkitResolveLocalFileSystemSyncURL ||
+    self.resolveLocalFileSystemSyncURL;
 
+//const FS = requestFileSystemSync(TEMPORARY, 10*1024*1024 /*10MB*/);
+
+self.onmessage = (evt) => {
+    let url = evt.data.url;
+    build(url);
+};
+
+function build(url) { // modules, exports
+    let coreDirname = '/';
     /*
         constructor()
     */
     // create declaration
-    let declarationText = hmc.hetaEditorsStorage
-        .get('platform.json')
-        .monacoEditor
-        .getValue();
+    let reader = new FileReaderSync();
+    let declarationFile = self.resolveLocalFileSystemSyncURL(url + 'platform.json').file();
+    let declarationText = reader.readAsText(declarationFile);
+
     let declaration = JSON.parse(declarationText);
 
     // TODO: check declaration and set defaults
@@ -37,10 +46,18 @@ function build(hmc, hee) { // modules, exports
     /*
         run()
     */
+    c.logger.info(`Compilation of module "${declaration.importModule?.source || 'index.heta'}" of type "${declaration.importModule?.type || 'heta'}"...`);
+
+    // 1. Parsing
+    let ms = new ModuleSystem(c.logger, (filename) => {
+        let stream = self.resolveLocalFileSystemSyncURL(url + filename).file().stream();
+
+        return stream;
+    });
+    let absFilename = path.join(_coreDirname, declaration.importModule?.source || 'index.heta');
+    //ms.addModuleDeep(absFilename, declaration.importModule?.type || 'heta', declaration.importModule);
 
     // logs after all
     //let logsText = JSON.stringify(c.defaultLogs, null, '  ');
     //console.log(logsText);
 }
-
-export default build;

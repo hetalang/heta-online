@@ -15,10 +15,10 @@ import HetaEditorsCollection from './heta-editor';
 $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
-import build from './build';
+import { requestFileSystemPromise, getFilePromise, createWriterPromise } from './promises'
 
 // document ready
-$(() => {
+$(() => { 
     updateWindowHeight();
     $('#hc-version').text(hetaPackage.version);
     $('#hc-github').attr('href', hetaPackage.repository.url);
@@ -41,11 +41,30 @@ $(() => {
       defaultEditor: 'output.log'
     });
     //hee.addEditor('output.json', 'I am JsonExport', 'json', false, false);
-    //hee.addEditor('output.m', 'I am MatlabExport', 'json', false, false);
     hee.addEditor('output.log', 'I am Logger', 'log', false, true);
 
+    // create worker and file sytems
+    let builderWorker = new Worker(new URL('./build.js', import.meta.url));
+    //let fs = requestFileSystemPromise(TEMPORARY, 10*1024*1024 /*10MB*/);
+
     // build button
-    $('#buildBtn').on('click', () => build(hmc, hee));
+    //let urls = [];
+    $('#buildBtn').on('click', async () => {
+      // save all files to web file system      
+      let WFS = await requestFileSystemPromise('TEMPORARY', 10*1024*1024);
+      for (let he of hmc.hetaEditorsStorage.values()) {
+        let text = he.monacoEditor.getValue();
+        let data = new Blob([text], { type: "text/plain" });
+      let entry = await getFilePromise(WFS, he.id, {create: true});
+        let writer = await createWriterPromise(entry);
+        writer.write(data);
+      }
+
+      // run builder
+      builderWorker.postMessage({
+        url: WFS.root.toURL()
+      });
+    });
 });
 
 function updateWindowHeight(){
