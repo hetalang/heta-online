@@ -50,14 +50,27 @@ function build(url) { // modules, exports
 
     // 1. Parsing
     let ms = new ModuleSystem(c.logger, (filename) => {
-        let stream = self.resolveLocalFileSystemSyncURL(url + filename).file().stream();
-
-        return stream;
+        let file = self.resolveLocalFileSystemSyncURL(url + filename).file();
+        let arrayBuffer = reader.readAsArrayBuffer(file);
+        
+        return Buffer.from(arrayBuffer);
     });
     let absFilename = path.join(_coreDirname, declaration.importModule?.source || 'index.heta');
-    //ms.addModuleDeep(absFilename, declaration.importModule?.type || 'heta', declaration.importModule);
+    let sourceType = declaration.importModule?.type || 'heta';
+    ms.addModuleDeep(absFilename, sourceType, declaration.importModule);
 
-    // logs after all
-    //let logsText = JSON.stringify(c.defaultLogs, null, '  ');
-    //console.log(logsText);
+    // 2. Modules integration
+    if (declaration.options?.debug) {
+        Object.values(ms.moduleCollection).forEach((value) => {
+          let relPath = path.relative(_coreDirname, value.filename + '.json');
+          let absPath = path.join(_metaDirname, relPath);
+          let str = JSON.stringify(value.parsed, null, 2);
+          fs.outputFileSync(absPath, str);
+          this.logger.info(`Meta file was saved to ${absPath}`);
+        });
+    }
+    let qArr = ms.integrate();
+
+    console.log(qArr)
+
 }
