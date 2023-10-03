@@ -252,9 +252,9 @@ class HetaEditorsCollection {
         
         this.addEditor(`${fileName}.${format.extension}`, format.template, format.language);
     }
-    addEditor(id, initialCode, type, toDelete=true, rightSide=false) {
+    addEditor(id, initialCode, type, toDelete=true, rightSide=false, readOnly=false) {
         // add to storage
-        let hp = new HetaEditor(this, id, initialCode, type, toDelete, rightSide);
+        let hp = new HetaEditor(this, id, initialCode, type, toDelete, rightSide, readOnly);
         this.hetaEditorsStorage.set(id, hp);
         hp.show();
     }

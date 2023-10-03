@@ -40,15 +40,21 @@ $(() => {
       panel: '#rightPanel',
       defaultEditor: 'output.log'
     });
-    //hee.addEditor('output.json', 'I am JsonExport', 'json', false, false);
-    hee.addEditor('output.log', 'I am Logger', 'log', false, true);
+    hee.addEditor('output.log', '$ ', 'log', false, true, true);
 
     // create worker and file sytems
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
-    //let fs = requestFileSystemPromise(TEMPORARY, 10*1024*1024 /*10MB*/);
+    builderWorker.onmessage = function({data}) {
+      let he = hee.hetaEditorsStorage.get(data.editor);
+      if (data.append) {
+        let currentValue = he.monacoEditor.getValue();
+        he.monacoEditor.setValue(currentValue + '\n' + data.value);
+      } else {
+        he.monacoEditor.setValue(data.value);
+      }
+    };
 
     // build button
-    //let urls = [];
     $('#buildBtn').on('click', async () => {
       // save all files to web file system      
       let WFS = await requestFileSystemPromise('TEMPORARY', 10*1024*1024);
