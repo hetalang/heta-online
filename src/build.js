@@ -15,8 +15,9 @@ self.onmessage = (evt) => {
 
 function build(url) { // modules, exports
     // first line in console
-    postMessage({editor: 'output.log', value: '$ heta build', append: false});
-    postMessage({editor: 'output.log', value: 'Running compilation with declaration file "/platform.json"...', append: true});
+    //postMessage({editor: 'output.log', value: '$ heta build', append: false});
+    postMessage({editor: 'output.log', value: 'heta build', append: true});
+    postMessage({editor: 'output.log', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
 
     let coreDirname = '/';
     /*
@@ -40,7 +41,7 @@ function build(url) { // modules, exports
     });
     */
     c.logger.addTransport((level, msg, opt, levelNum) => {
-        let value = `[${level}]\t${msg}`;
+        let value = `\n[${level}]\t${msg}`;
 
         postMessage({editor: 'output.log', value: value, append: true});
     });
@@ -83,6 +84,5 @@ function build(url) { // modules, exports
     let qArr = ms.integrate();
 
     //console.log(qArr)
-    postMessage({editor: 'output.log', value: '', append: true});
-    postMessage({editor: 'output.log', value: '$ ', append: true});
+    postMessage({editor: 'output.log', value: '\n\n$ ', append: true});
 }

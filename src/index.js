@@ -40,7 +40,7 @@ $(() => {
       panel: '#rightPanel',
       defaultEditor: 'output.log'
     });
-    hee.addEditor('output.log', {value: '$ ', language: 'log', readOnly: true}, false, true);
+    hee.addEditor('output.log', {value: '$ ', language: 'log', readOnly: true, theme: 'vs'}, false, true);
 
     // create worker and file sytems
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
@@ -48,7 +48,7 @@ $(() => {
       let he = hee.hetaEditorsStorage.get(data.editor);
       if (data.append) {
         let currentValue = he.monacoEditor.getValue();
-        he.monacoEditor.setValue(currentValue + '\n' + data.value);
+        he.monacoEditor.setValue(currentValue + data.value);
       } else {
         he.monacoEditor.setValue(data.value);
       }
