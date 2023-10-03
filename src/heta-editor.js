@@ -250,11 +250,14 @@ class HetaEditorsCollection {
         
         } while (this.hetaEditorsStorage.has(`${fileName}.${format.extension}`))
         
-        this.addEditor(`${fileName}.${format.extension}`, format.template, format.language);
+        this.addEditor(
+          `${fileName}.${format.extension}`,
+          {value: format.template, language: format.language, readOnly: false}
+        );
     }
-    addEditor(id, initialCode, type, toDelete=true, rightSide=false, readOnly=false) {
+    addEditor(id, toDelete=true, rightSide=false, monacoOptions) {
         // add to storage
-        let hp = new HetaEditor(this, id, initialCode, type, toDelete, rightSide, readOnly);
+        let hp = new HetaEditor(this, id, toDelete, rightSide, monacoOptions);
         this.hetaEditorsStorage.set(id, hp);
         hp.show();
     }
@@ -266,7 +269,7 @@ class HetaEditorsCollection {
 
 // class storing editor and visualization
 class HetaEditor {
-    constructor(parent, id, initialCode, type='json', toDelete=true, rightSide=false, readOnly=false) {
+    constructor(parent, id, monacoOptions, toDelete=true, rightSide=false) {
         this.id = id;
         this._parent = parent;
 
@@ -293,11 +296,7 @@ class HetaEditor {
         }
 
         // add editor
-        this.monacoEditor = monaco.editor.create(this.editorContainer, {
-            value: initialCode,
-            language: type,
-            readOnly: readOnly
-        });
+        this.monacoEditor = monaco.editor.create(this.editorContainer, monacoOptions);
     }
     show() {
         this._parent.hideEditors();

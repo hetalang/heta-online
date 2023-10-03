@@ -31,16 +31,16 @@ $(() => {
       panel: '#leftPanel',
       defaultEditor: 'index.heta'
     });
-    hmc.addEditor('platform.json', PLATFORM_JSON_TEMPLATE, 'json', false, true);
-    hmc.addEditor('qsp-units.heta', QSP_UNITS_HETA_TEMPLATE, 'heta');
-    hmc.addEditor('index.heta', INDEX_HETA_TEMPLATE, 'heta', false, false);
+    hmc.addEditor('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true);
+    hmc.addEditor('qsp-units.heta', {value: QSP_UNITS_HETA_TEMPLATE, language: 'heta'}, true, false);
+    hmc.addEditor('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, false, false);
 
     // heta exports collection
     let hee = new HetaEditorsCollection({
       panel: '#rightPanel',
       defaultEditor: 'output.log'
     });
-    hee.addEditor('output.log', '$ ', 'log', false, true, true);
+    hee.addEditor('output.log', {value: '$ ', language: 'log', readOnly: true}, false, true);
 
     // create worker and file sytems
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
