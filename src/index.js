@@ -38,9 +38,9 @@ $(() => {
     // heta exports collection
     let hee = new HetaEditorsCollection({
       panel: '#rightPanel',
-      defaultEditor: 'output.log'
+      defaultEditor: 'CONSOLE'
     });
-    hee.addEditor('output.log', {value: '$ ', language: 'log', readOnly: true, theme: 'vs'}, false, true);
+    hee.addEditor('CONSOLE', {value: '$ ', language: 'log', readOnly: true, theme: 'vs'}, false, true);
 
     // create worker and file sytems
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
