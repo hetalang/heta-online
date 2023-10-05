@@ -179,12 +179,24 @@ function build(url, settings) { // modules, exports
 
         // 9. Exports
         if (settings.options.skipExport) {
-          c.logger.warn('Exporting skipped as stated in declaration.');
+            c.logger.warn('Exporting skipped as stated in declaration.');
         } else if (settings.options.juliaOnly) {
-          c.logger.warn('"Julia only" mode');
-          //c.exportJuliaOnly(); // TODO: check
+            c.logger.warn('"Julia only" mode');
+            //this.exportJuliaOnly(); 
+            // create export without putting it to exportStorage
+            let Julia = this.container.classes['Julia'];
+            let exportItem = new Julia({
+                format: 'Julia',
+                filepath: '_julia'
+            });
+
+            _makeAndSave(exportItem, _distDirname);
         } else {
-          //c.exportMany(); // TODO: check
+            //this.exportMany();
+            let exportElements = [...c.exportStorage].map((x) => x[1]);
+            c.logger.info(`Start exporting to files, total: ${exportElements.length}.`);
+
+            exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname));
         }
       } else {
         c.logger.warn('Units checking and export were skipped because of errors in compilation.');
@@ -210,4 +222,23 @@ function build(url, settings) { // modules, exports
     }
 
     return c;
+}
+
+function _makeAndSave(exportItem, pathPrefix) {
+    let logger = exportItem._container.logger;
+    let absPath = path.resolve(pathPrefix, exportItem.filepath);
+    let msg = `Exporting to "${absPath}" of format "${exportItem.format}"...`;
+    logger.info(msg);
+  
+    exportItem.make().forEach((out) => {
+      let filePath = [absPath, out.pathSuffix].join('');
+      /*
+      try {
+        fs.outputFileSync(filePath, out.content);
+      } catch (err) {
+        let msg =`Heta compiler cannot export to file: "${err.path}" because it is busy.`;
+        logger.error(msg, {type: 'ExportError'});
+      }
+      */
+    });
 }
