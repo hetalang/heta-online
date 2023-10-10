@@ -5,14 +5,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-
+//const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const isProduction = process.env.NODE_ENV == 'production';
 
-
 const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader';
-
-
 
 const config = {
     entry: {
@@ -51,7 +48,14 @@ const config = {
                 test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
                 type: 'asset',
             },
-
+            {
+                test: /\.(njk|nunjucks)$/,
+                loader: 'nunjucks-loader',
+                options: {
+                    config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env',
+                    //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile' warning
+                }
+            }
             // Add your rules for custom modules here
             // Learn more about loaders from https://webpack.js.org/loaders/
         ],

@@ -1,10 +1,11 @@
-import { Container, ModuleSystem, Transpot } from 'heta-compiler/src/browser';
+import { Container, ModuleSystem, Transpot } from 'heta-compiler/src/webpack';
 import path from 'path';
 import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 import Ajv from 'ajv';
 //const ajvErrors = require('ajv-errors');
 import hetaCompilerPackage from 'heta-compiler/package.json';
 import semver from 'semver';
+
 
 self.requestFileSystemSync = self.webkitRequestFileSystemSync ||
     self.requestFileSystemSync;
@@ -232,6 +233,7 @@ function _makeAndSave(exportItem, pathPrefix) {
   
     exportItem.make().forEach((out) => {
       let filePath = [absPath, out.pathSuffix].join('');
+      console.log(out.content.toString())
       /*
       try {
         fs.outputFileSync(filePath, out.content);
