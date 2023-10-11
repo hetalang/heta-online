@@ -255,9 +255,9 @@ class HetaEditorsCollection {
           {value: format.template, language: format.language, readOnly: false}
         );
     }
-    addEditor(id, toDelete=true, rightSide=false, monacoOptions) {
+    addEditor(id, monacoOptions, toDelete=true, rightSide=false) {
         // add to storage
-        let hp = new HetaEditor(this, id, toDelete, rightSide, monacoOptions);
+        let hp = new HetaEditor(this, id, monacoOptions, toDelete, rightSide);
         this.hetaEditorsStorage.set(id, hp);
         hp.show();
     }

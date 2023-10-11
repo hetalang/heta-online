@@ -37,7 +37,7 @@ self.onmessage = (evt) => {
     postMessage({editor: 'CONSOLE', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
 
     // create declaration
-    let declarationFile = self.resolveLocalFileSystemSyncURL(evt.data.url + 'platform.json').file();
+    let declarationFile = self.resolveLocalFileSystemSyncURL(evt.data.url + '/platform.json').file();
     let declarationText = reader.readAsText(declarationFile);
     try {
         var declaration = JSON.parse(declarationText);
@@ -127,8 +127,12 @@ function build(url, settings) { // modules, exports
 
     // 1. Parsing
     let ms = new ModuleSystem(c.logger, (filename) => {
-        let file = self.resolveLocalFileSystemSyncURL(url + filename).file();
-        let arrayBuffer = reader.readAsArrayBuffer(file);
+        try {
+            let file = self.resolveLocalFileSystemSyncURL(url + filename).file();
+            var arrayBuffer = reader.readAsArrayBuffer(file);
+        } catch (e) {
+            throw new Error(`File ${filename} is not found.`);
+        }
         
         return Buffer.from(arrayBuffer);
     });

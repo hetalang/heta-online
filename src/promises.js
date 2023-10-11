@@ -6,9 +6,9 @@ export function requestFileSystemPromise(type, size) {
     });
 }
 
-export function getFilePromise(WFS, name, options) {
+export function getFilePromise(directoryEntry, name, options) {
     return new Promise((resolve, reject) => {
-        WFS.root.getFile(name, options, resolve, reject)
+        directoryEntry.getFile(name, options, resolve, reject)
     })
 }
 
@@ -17,5 +17,24 @@ export function createWriterPromise(entry) {
 
     return new Promise((resolve, reject) => {
         entry.createWriter(resolve, reject);
+    });
+}
+
+export function cleanDirectoryPromise(directoryEntry, path, options) {
+    return new Promise((resolve, reject) => {
+        directoryEntry.createReader().readEntries((entriesArray) => {
+            let promises = entriesArray.map(removeEntryPromise);
+            Promise.all(promises).then(resolve, reject);
+        }, reject);
+    });
+}
+
+export function removeEntryPromise(entry) {
+    return new Promise((resolve, reject) => {
+        if (entry.isFile) {
+            entry.remove(resolve, reject);
+        } else {
+            entry.removeRecursively(resolve, reject);
+        }
     });
 }

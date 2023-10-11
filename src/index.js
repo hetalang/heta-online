@@ -15,7 +15,7 @@ import HetaEditorsCollection from './heta-editor';
 $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
-import { requestFileSystemPromise, getFilePromise, createWriterPromise } from './promises'
+import { requestFileSystemPromise, getFilePromise, createWriterPromise, cleanDirectoryPromise } from './promises'
 
 // document ready
 $(() => { 
@@ -42,7 +42,7 @@ $(() => {
     });
     hee.addEditor('CONSOLE', {value: '$ ', language: 'log', readOnly: true, theme: 'vs'}, false, true);
 
-    // create worker and file sytems
+    // create worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
     builderWorker.onmessage = function({data}) {
       let he = hee.hetaEditorsStorage.get(data.editor);
@@ -58,10 +58,11 @@ $(() => {
     $('#buildBtn').on('click', async () => {
       // save all files to web file system      
       let WFS = await requestFileSystemPromise('TEMPORARY', 10*1024*1024);
+      await cleanDirectoryPromise(WFS.root);
       for (let he of hmc.hetaEditorsStorage.values()) {
         let text = he.monacoEditor.getValue();
         let data = new Blob([text], { type: "text/plain" });
-      let entry = await getFilePromise(WFS, he.id, {create: true});
+        let entry = await getFilePromise(WFS.root, he.id, {create: true});
         let writer = await createWriterPromise(entry);
         writer.write(data);
       }
