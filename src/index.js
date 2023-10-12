@@ -19,14 +19,13 @@ import { requestFileSystemPromise, getFilePromise, createWriterPromise, cleanDir
 
 // document ready
 $(() => { 
-    updateWindowHeight();
     $('#hc-version').text(hetaPackage.version);
     $('#hc-github').attr('href', hetaPackage.repository.url);
     $('#hc-homepage').attr('href', hetaPackage.homepage);
     //console.log(hetaPackage);
 
     // heta modules collection
-    let hmc = new PagesCollection({
+    let hmc = window.hmc = new PagesCollection({
       newButton: '#newButton',
       panel: '#leftPanel'
     });
@@ -38,13 +37,17 @@ $(() => {
     new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, false, false)
       .addTo(hmc, true);
 
+
     // heta exports collection
-    let hee = new PagesCollection({
+    let hee = window.hee = new PagesCollection({
       panel: '#rightPanel'
     });
+
     new ConsolePage('CONSOLE')
       .addTo(hee, true)
       .appendText('$ ');
+
+    updateWindowHeight();
 
     // create worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
@@ -106,4 +109,12 @@ function updateWindowHeight(){
 
     let h3 = $('#mainDiv').outerHeight() - $('#rightPanel .codeNavigation').outerHeight() - 2;
     $('#rightPanel .codeContainer').height(h3 + 'px');
+
+    // update editors
+    window.hmc
+      .hetaPagesStorage
+      .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
+    window.hee
+      .hetaPagesStorage
+      .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
 }

@@ -93,6 +93,8 @@ export class Page {
 
     $(this.navigationButton).addClass('w3-bottombar w3-border-green');
     $(this.editorContainer).css('display', 'block');
+    // resize
+    this.monacoEditor?.layout()
   }
   delete() {
     $(this.navigationButton).remove();
