@@ -5,207 +5,11 @@ import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
 import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
 import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
 import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
+import './heta-colors';
+import './console-colors';
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-
-monaco.languages.register({id: 'heta'});
-monaco.languages.setMonarchTokensProvider('heta', {
-  defaultToken: 'invalid',
-    keywords: ['include', 'type', 'with', 'namespace', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
-    //tokenPostfix: ".yaml",
-  brackets: [
-    { token: "delimiter.bracket", open: "{", close: "}" },
-    { token: "delimiter.square", open: "[", close: "]" },
-    { token: 'comment', open: '/*', close: '*/' }
-  ],
-  ws: /[ \t\r\n]/,
-  numberInteger: /(?:0|[+-]?[0-9]+)/,
-  numberFloat: /(?:0|[+-]?[0-9]+)(?:\.[0-9]+)?(?:[eE][-+][1-9][0-9]*)?/,
-  numberInfinity: /[+-]?Infinity/,
-  numberNaN: /NaN/,
-  mathSymbols: /[\w\s*\+\-\*\/\^\(\)\.\>\<\=\!\?\,]/,
-  escapes: /\\(?:[btnfr\\"']|[0-7][0-7]?|[0-3][0-7]{2})/,
-  idProp: /[a-zA-Z]+\w*/,
-  actionProp: /#[a-zA-Z]+\w*/,
-  classProp: /\@[a-zA-Z]+\w*/,
-  filepathFormat: /[\w\/\\\.\-]+/,
-  tokenizer: {
-    root: [
-      { include: "@comment" },
-      { include: '@multilineCommentStart' },
-      { include: "@whitespace" },
-      [/(?=include )/, 'keyword', '@includeStatement'],
-      [/namespace /, 'keyword', '@namespaceBlock'],
-      [/block /, 'keyword', '@defaultBlock'],
-      { include: "@actionStatement" },
-      //[/@numberInteger(?![ \t]*\S+)/, "number"],
-      //[/@numberFloat(?![ \t]*\S+)/, "number.float"],
-      //[/@numberInfinity(?![ \t]*\S+)/, "number.infinity"],
-      //[/@numberNaN(?![ \t]*\S+)/, "number.nan"],
-      //[/(".*?"|'.*?'|[^#'"]*?)([ \t]*)(:)( |$)/, ["type", "white", "operators", "white"]],
-      //{ include: "@flowScalars" },
-      /*[
-        /.+?(?=(\s+#|$))/,
-        {
-          cases: {
-            "@keywords": "keyword",
-            "@default": "string"
-          }
-        }
-      ]*/
-    ],
-    includeStatement: [
-        { include: "@whitespace" },
-        { include: '@multilineCommentStart' },
-        [/(include )(@filepathFormat?)/, ['keyword', 'string']],
-        [/(type )(\w*)/, ['keyword', 'string']],
-        [/with /, 'keyword', '@withContent'],
-        ['', 'invalid', '@pop'],
-    ],
-    withContent: [
-        [/{/, 'bracket', '@object'],
-        ['', 'invalid', '@pop'],
-    ],
-    namespaceBlock: [
-      [/begin/, 'keyword', '@block'],
-      [/@idProp/, 'string'],
-    ],
-    defaultBlock: [
-      [/begin/, 'keyword', '@block'],
-      [/{/, 'bracket', '@object'],
-    ],
-    block: [
-      [/end(?!\w)/, 'keyword', '@popall'],
-      { include: "@comment" },
-      { include: '@multilineCommentStart' },
-      { include: "@whitespace" },
-      { include: "@actionStatement" },
-    ],
-    actionStatement: [
-        { include: "@whitespace" },
-        ['(?!^$)', 'string', '@statementComponents'], // not an empty string
-    ],
-    statementComponents: [
-        { include: "@whitespace" },
-        { include: "@comment" },
-        { include: '@multilineCommentStart' },
-        [/\'{3}/, 'comment', '@notes'], // not working
-        [/\'/, 'string', '@title'],      // title
-        [/@classProp/, 'keyword'], // @Class
-        [/@actionProp/, 'keyword'], // #action
-        [/(?![.:\]])(=@ws*)(@numberFloat|@numberInteger|@numberInfinity|@numberNaN)/, ['operator', 'number.float']], // = 1.1
-        [/[.:]=@ws*/, 'operator', '@mathExpr'], // .= xxx, := xxx
-        [/\[@idProp?\]=@ws*/, 'operator', '@mathExpr'], // []= xxx, [evt]= xxx
-        
-        [/@idProp::@idProp/, 'identifier'], // namespace::id
-        [/@idProp::\*/, 'identifier'], // namespace::*
-        [/@idProp/, 'identifier'], // id
-        [/\{/, 'bracket', '@object'], // dictionary
-        [ /\;/, 'delimiter', '@pop'], // end
-    ],
-    object: [
-      { include: "@whitespace" },
-      { include: "@comment" },
-      { include: '@multilineCommentStart' },
-      [/[\}]/, "bracket", "@pop"],
-      [/,/, "delimiter.comma"],
-      [/:(?= )/, "operators"],
-      [/(?:".*?"|'.*?'|[^,\{\[]+?)(?=: )/, "type"],
-      { include: "@flowCollections" },
-      { include: "@flowScalars" },
-      { include: "@flowNumber" },
-      [
-        /[^\},]+/,
-        {
-          cases: {
-            //"@keywords": "keyword",
-            "@default": "string"
-          }
-        }
-      ]
-    ],
-    array: [
-      { include: "@whitespace" },
-      { include: "@comment" },
-      { include: '@multilineCommentStart' },
-      [/\]/, "@brackets", "@pop"],
-      [/,/, "delimiter.comma"],
-      { include: "@flowCollections" },
-      { include: "@flowScalars" },
-      { include: "@flowNumber" },
-      [
-        /[^\],]+/,
-        {
-          cases: {
-            "@keywords": "keyword",
-            "@default": "string"
-          }
-        }
-      ]
-    ],
-    multiString: [[/^( +).+$/, "string", "@multiStringContinued.$1"]],
-    multiStringContinued: [
-      [
-        /^( *).+$/,
-        {
-          cases: {
-            "$1==$S2": "string",
-            "@default": { token: "@rematch", next: "@popall" }
-          }
-        }
-      ]
-    ],
-    whitespace: [[/[ \t\r\n]+/, "white"]],
-    comment: [[/\/\/.*$/, "comment"]],
-    multilineCommentStart: [
-      [/\/\*/, {token: 'comment', bracket: '@open', next: '@multilineComment'}],
-    ],
-    multilineComment: [
-      [ /[^\/*]+/, 'comment' ],
-      // [ /\/\*/, 'comment', '@push' ],    // nested comment
-      [ /\*\//, {token: 'comment', bracket: '@close', next: '@pop'} ],
-      [/[\/*]/, 'comment' ]
-    ],
-    mathExpr: [
-      //{include: '@whitespace'},
-      [/@mathSymbols+/, 'string'],
-      ['^$', 'string'],
-      ['', 'string', '@pop'],
-    ],
-    flowCollections: [
-      [/\[/, "@brackets", "@array"],
-      [/\{/, "@brackets", "@object"]
-    ],
-    flowScalars: [
-      [/"([^"\\]|\\.)*$/, "string.invalid"],
-      [/'([^'\\]|\\.)*$/, "string.invalid"],
-      [/'[^']*'/, "string"],
-      [/"/, "string", "@doubleQuotedString"]
-    ],
-    doubleQuotedString: [
-      [/[^\\"]+/, "string"],
-      [/@escapes/, "string.escape"],
-      [/\\./, "string.escape.invalid"],
-      [/"/, "string", "@pop"]
-    ],
-    title: [
-      [/[^']+/, "string"],
-      [/'/, "string", "@pop"]
-    ],
-    notes: [
-      [/[^']+/, 'comment'],
-      [/'{3}/, "comment", "@pop"],
-      [/'/, 'comment']
-    ],
-    flowNumber: [
-      [/@numberInteger(?=[ \t]*[,\]\}])/, "number"],
-      [/@numberFloat(?=[ \t]*[,\]\}])/, "number.float"],
-      [/@numberInfinity(?=[ \t]*[,\]\}])/, "number.infinity"],
-      [/@numberNaN(?=[ \t]*[,\]\}])/, "number.nan"],
-    ],
-  }
-});
 
 const FORMATS = { // + Exports/Modules
     json: {extension: 'json', language: 'json', template: DEFAULT_JSON_TEMPLATE}, // JSON / json
@@ -223,11 +27,11 @@ const FORMATS = { // + Exports/Modules
 }
 
 // class storing HetaEditors
-class HetaEditorsCollection {
+export class PagesCollection {
     constructor(options = {}) {
         this.panel = options.panel;
-        this.hetaEditorsStorage = new Map();
-        this.defaultEditorName = options.defaultEditor; // TODO: bad solution
+        this.hetaPagesStorage = new Map();
+        this.defaultPageName = undefined;
         // set events
         this.count = 0;
         options.newButton && $(options.newButton).on('change', (evt) => { 
@@ -236,8 +40,8 @@ class HetaEditorsCollection {
             evt.target.value = '';
         })
     }
-    get defaultEditor() {
-        return this.hetaEditorsStorage.get(this.defaultEditorName);
+    get defaultPage() {
+        return this.hetaPagesStorage.get(this.defaultPageName);
     }
     addUserEditor(format) {
         if (format===undefined) throw new Error('Unknown Heta module format.');
@@ -247,19 +51,10 @@ class HetaEditorsCollection {
         do {
             fileName = window.prompt(title, fileName);
             title = `"${fileName}.${format.extension}" already exist. Choose another name.`
+        } while (this.hetaPagesStorage.has(`${fileName}.${format.extension}`))
         
-        } while (this.hetaEditorsStorage.has(`${fileName}.${format.extension}`))
-        
-        this.addEditor(
-          `${fileName}.${format.extension}`,
-          {value: format.template, language: format.language, readOnly: false}
-        );
-    }
-    addEditor(id, monacoOptions, toDelete=true, rightSide=false) {
-        // add to storage
-        let hp = new HetaEditor(this, id, monacoOptions, toDelete, rightSide);
-        this.hetaEditorsStorage.set(id, hp);
-        hp.show();
+        new EditorPage(`${fileName}.${format.extension}`, {value: format.template, language: format.language}, true, false)
+          .addTo(this);
     }
     hideEditors() {
         $(this.panel).find('.hetaModuleBtn').removeClass('w3-bottombar w3-border-green');
@@ -268,48 +63,88 @@ class HetaEditorsCollection {
 }
 
 // class storing editor and visualization
-class HetaEditor {
-    constructor(parent, id, monacoOptions, toDelete=true, rightSide=false) {
-        this.id = id;
-        this._parent = parent;
+export class Page {
+  constructor(id, deleteBtn=true, rightSide=false) {
+    this.id = id;
+    //this._parent
 
-        // create div element
-        this.editorContainer = $(`<div class="hetaModuleContainer" style="height:100%;"></div>`)
-            .appendTo($(this._parent.panel).find('.codeContainer'))[0];
-        this.navigationButton = $(`<a href="#" class="hetaModuleBtn w3-button w3-small"><span class="hetaModuleName">${id}</span></a>`)
-            .appendTo($(this._parent.panel).find('.codeNavigation'))[0];
-        if (rightSide) {
-            $(this.navigationButton).addClass('w3-right');
-        }
-
-        // add events to module
-        $(this.navigationButton).find('.hetaModuleName').on('click', () => this.show());
-        if (toDelete) {
-            $('<span class="hetaModuleCloseBtn">&nbsp; &times;</span>')
-                .appendTo(this.navigationButton)
-                .on('click', () => {
-                    let isOk = window.confirm(`"${this.id}" file will be deleted.\nAre you sure?`)
-                    if (isOk) {                    
-                        this.delete();
-                    }
-                });
-        }
-
-        // add editor
-        this.monacoEditor = monaco.editor.create(this.editorContainer, monacoOptions);
+    // create div element
+    this.editorContainer = $(`<div class="hetaModuleContainer" style="height:100%;"></div>`)[0];
+    this.navigationButton = $(`<a href="#" class="hetaModuleBtn w3-button w3-small"><span class="hetaModuleName">${id}</span></a>`)[0];
+    if (rightSide) {
+        $(this.navigationButton).addClass('w3-right');
     }
-    show() {
-        this._parent.hideEditors();
 
-        $(this.navigationButton).addClass('w3-bottombar w3-border-green');
-        $(this.editorContainer).css('display', 'block');
+    // add events to module
+    $(this.navigationButton).find('.hetaModuleName').on('click', () => this.show());
+    if (deleteBtn) {
+        $('<span class="hetaModuleCloseBtn">&nbsp; &times;</span>')
+            .appendTo(this.navigationButton)
+            .on('click', () => {
+                let isOk = window.confirm(`"${this.id}" file will be deleted.\nAre you sure?`)
+                if (isOk) {                    
+                    this.delete();
+                }
+            });
+    }
+  }
+  show() {
+    this._parent.hideEditors();
+
+    $(this.navigationButton).addClass('w3-bottombar w3-border-green');
+    $(this.editorContainer).css('display', 'block');
+  }
+  delete() {
+    $(this.navigationButton).remove();
+    $(this.editorContainer).remove();
+    this._parent.hetaPagesStorage.delete(this.id);
+    this._parent.defaultPage.show();
+  }
+  addTo(pageCollection, setAsDefault=false) {
+    // add to panel
+    this._parent = pageCollection;
+    if (setAsDefault) {
+      pageCollection.defaultPageName = this.id;
+    }
+    $(pageCollection.panel).find('.codeContainer').append($(this.editorContainer));
+    $(pageCollection.panel).find('.codeNavigation').append($(this.navigationButton));
+
+    // add to storage
+    pageCollection.hetaPagesStorage.set(this.id, this);
+    this.show();
+
+    return this;
+  }
+}
+
+export class EditorPage extends Page {
+    constructor(id, monacoOptions, deleteBtn=true, rightSide=false) {
+        super(id, deleteBtn, rightSide);
+        let _monacoOptions = Object.assign({}, {
+          readOnly: false,
+          minimap: {enabled: false}
+        }, monacoOptions)
+
+        this.monacoEditor = monaco.editor.create(this.editorContainer, _monacoOptions);
     }
     delete() {
-        $(this.navigationButton).remove();
-        $(this.editorContainer).remove();
-        this._parent.hetaEditorsStorage.delete(this.id);
-        this._parent.defaultEditor.show();
+      this.monacoEditor.dispose();
+      super.delete();
+    }
+    addTo(pageCollection, setAsDefault=false) {
+      super.addTo(pageCollection, setAsDefault);
+      this.monacoEditor.layout();
+
+      return this;
     }
 }
 
-export default HetaEditorsCollection;
+export class ConsolePage extends EditorPage {
+  constructor(id) {
+    super(id, {language: 'console', readOnly: true}, false, true);
+  }
+  appendText(text) {
+    let currentValue = this.monacoEditor.getValue();
+    this.monacoEditor.setValue(currentValue + text);
+  }
+}

@@ -31,8 +31,8 @@ let contactMessage = `
 
 self.onmessage = (evt) => {
     // first lines in console
-    postMessage({action: 'console', editor: 'CONSOLE', value: 'heta build', append: true});
-    postMessage({action: 'console', editor: 'CONSOLE', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
+    postMessage({action: 'console', value: 'heta build', append: true});
+    postMessage({action: 'console', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
 
     // create declaration
     let declarationFile = self.resolveLocalFileSystemSyncURL(evt.data.url + '/platform.json').file();
@@ -40,32 +40,32 @@ self.onmessage = (evt) => {
     try {
         var declaration = JSON.parse(declarationText);
     } catch (e) {
-        postMessage({action: 'console', editor: 'CONSOLE', value: `\nDeclaration file must be JSON formatted:`, append: true});
-        postMessage({action: 'console', editor: 'CONSOLE', value: `\n\t- ${e.message}`, append: true});
+        postMessage({action: 'console', value: `\nDeclaration file must be JSON formatted:`, append: true});
+        postMessage({action: 'console', value: `\n\t- ${e.message}`, append: true});
         
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ ', append: true});
         return;
     }
 
     // validate and set defaults
     let valid = validate(declaration);
     if (!valid) { // analyze errors
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\nErrors in declaration file:', append: true});
+        postMessage({action: 'console', value: '\nErrors in declaration file:', append: true});
         validate.errors.forEach((ajvError) => {
             let msg = `\n\t- "${ajvError.instancePath}" ${ajvError.message}`;
-            postMessage({action: 'console', editor: 'CONSOLE', value: msg, append: true});
+            postMessage({action: 'console', value: msg, append: true});
         });
 
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ ', append: true});
         return;
     }
 
     // === wrong version throws, if no version stated than skip ===
     let satisfiesVersion = semver.satisfies(hetaCompilerPackage.version, declaration.builderVersion);
     if (!satisfiesVersion) {
-        postMessage({action: 'console', editor: 'CONSOLE', value: `\nVersion requirements (${declaration.builderVersion}) don't meet builder version ${hetaCompilerPackage.version}.`, append: true});
+        postMessage({action: 'console', value: `\nVersion requirements (${declaration.builderVersion}) don't meet builder version ${hetaCompilerPackage.version}.`, append: true});
         
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ ', append: true});
         return;
     }
 
@@ -73,20 +73,20 @@ self.onmessage = (evt) => {
     try {
         var container = build(evt.data.url, declaration);
     } catch(error) {
-        postMessage({action: 'console', editor: 'CONSOLE', value: contactMessage + '\n', append: true});
-        postMessage({action: 'console', editor: 'CONSOLE', value: error.stack, append: true});
+        postMessage({action: 'console', value: contactMessage + '\n', append: true});
+        postMessage({action: 'console', value: error.stack, append: true});
 
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ ', append: true});
         return;
     }
 
     if (container.hetaErrors().length > 0) {
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\nCompilation ERROR! See logs.', append: true});
+        postMessage({action: 'console', value: '\nCompilation ERROR! See logs.', append: true});
     } else {
-        postMessage({action: 'console', editor: 'CONSOLE', value: '\nCompilation OK!', append: true});
+        postMessage({action: 'console', value: '\nCompilation OK!', append: true});
     }
 
-    postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
+    postMessage({action: 'console', value: '\n\n$ ', append: true});
     
     postMessage({action: 'finished'});
 };
@@ -107,7 +107,7 @@ function build(url, settings) { // modules, exports
     c.logger.addTransport((level, msg, opt, levelNum) => {
         let value = `\n[${level}]\t${msg}`;
 
-        postMessage({action: 'console', editor: 'CONSOLE', value: value, append: true});
+        postMessage({action: 'console', value: value, append: true});
     });
 
     // file paths

@@ -10,7 +10,7 @@ import 'font-awesome/css/font-awesome.min.css';
 import $ from 'jquery';
 //window.$ = $; // set as global
 
-import HetaEditorsCollection from './heta-editor';
+import {PagesCollection, EditorPage, ConsolePage} from './heta-editor';
 
 $(window).on('resize', updateWindowHeight);
 
@@ -26,38 +26,55 @@ $(() => {
     //console.log(hetaPackage);
 
     // heta modules collection
-    let hmc = new HetaEditorsCollection({
+    let hmc = new PagesCollection({
       newButton: '#newButton',
-      panel: '#leftPanel',
-      defaultEditor: 'index.heta'
+      panel: '#leftPanel'
     });
-    hmc.addEditor('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true);
-    hmc.addEditor('qsp-units.heta', {value: QSP_UNITS_HETA_TEMPLATE, language: 'heta'}, true, false);
-    hmc.addEditor('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, false, false);
+
+    new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
+      .addTo(hmc);
+    new EditorPage('qsp-units.heta', {value: QSP_UNITS_HETA_TEMPLATE, language: 'heta'}, true, false)
+      .addTo(hmc);
+    new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, false, false)
+      .addTo(hmc, true);
 
     // heta exports collection
-    let hee = new HetaEditorsCollection({
-      panel: '#rightPanel',
-      defaultEditor: 'CONSOLE'
+    let hee = new PagesCollection({
+      panel: '#rightPanel'
     });
-    hee.addEditor('CONSOLE', {value: '$ ', language: 'log', readOnly: true, theme: 'vs'}, false, true);
+    new ConsolePage('CONSOLE')
+      .addTo(hee, true)
+      .appendText('$ ');
 
     // create worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
     builderWorker.onmessage = function({data}) {
-      if (data.action === 'console') { // update editor
-        let he = hee.hetaEditorsStorage.get(data.editor);
+      // update editor
+      if (data.action === 'editor') { 
+        let he = hee.hetaPagesStorage.get(data.editor);
         if (data.append) {
           let currentValue = he.monacoEditor.getValue();
           he.monacoEditor.setValue(currentValue + data.value);
         } else {
           he.monacoEditor.setValue(data.value);
         }
-      } else if (data.action === 'finished') { // show files
-        console.log('Build finished!!!');
-      } else {
-        throw new Error(`Unknown action in worker messages: ${data.action}`);
+
+        return; // BRAKE
       }
+      // update console
+      if (data.action === 'console') { 
+        let he = hee.hetaPagesStorage.get('CONSOLE');
+        he.appendText(data.value);
+
+        return; // BRAKE
+      }
+      // show files
+      if (data.action === 'finished') {
+        console.log('Build finished!!!');
+        return; // BRAKE
+      }
+      
+      throw new Error(`Unknown action in worker messages: ${data.action}`);
     };
 
     // build button
@@ -65,7 +82,7 @@ $(() => {
       // save all files to web file system      
       let WFS = await requestFileSystemPromise('TEMPORARY', 10*1024*1024);
       await cleanDirectoryPromise(WFS.root);
-      for (let he of hmc.hetaEditorsStorage.values()) {
+      for (let he of hmc.hetaPagesStorage.values()) {
         let text = he.monacoEditor.getValue();
         let data = new Blob([text], { type: "text/plain" });
         let entry = await getFilePromise(WFS.root, he.id, {create: true});
