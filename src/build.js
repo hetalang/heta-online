@@ -225,12 +225,16 @@ function build(url, settings) { // modules, exports
           .join('\n');  
       }
 
-      //fs.outputFileSync(this._logPath, logs);
+      //fs.outputFileSync(_logPath, logs);
+      self.resolveLocalFileSystemSyncURL(url)
+        .getFile(_logPath, {create: true})
+        .createWriter()
+        .write(new Blob([logs], { type: "text/plain" }));
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 
-    // TEMP
-    let entries = distDirectoryEntry.createReader().readEntries();
+    // XXX: TEMP for testing
+    let entries = distDirectoryEntry?.createReader().readEntries();
     console.log(entries);
     
     return c;
