@@ -6,7 +6,6 @@ import Ajv from 'ajv';
 import hetaCompilerPackage from 'heta-compiler/package.json';
 import semver from 'semver';
 
-
 self.requestFileSystemSync = self.webkitRequestFileSystemSync ||
     self.requestFileSystemSync;
 self.resolveLocalFileSystemSyncURL = self.webkitResolveLocalFileSystemSyncURL ||
@@ -32,9 +31,8 @@ let contactMessage = `
 
 self.onmessage = (evt) => {
     // first lines in console
-    //postMessage({editor: 'CONSOLE', value: '$ heta build', append: false});
-    postMessage({editor: 'CONSOLE', value: 'heta build', append: true});
-    postMessage({editor: 'CONSOLE', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
+    postMessage({action: 'console', editor: 'CONSOLE', value: 'heta build', append: true});
+    postMessage({action: 'console', editor: 'CONSOLE', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
 
     // create declaration
     let declarationFile = self.resolveLocalFileSystemSyncURL(evt.data.url + '/platform.json').file();
@@ -42,32 +40,32 @@ self.onmessage = (evt) => {
     try {
         var declaration = JSON.parse(declarationText);
     } catch (e) {
-        postMessage({editor: 'CONSOLE', value: `\nDeclaration file must be JSON formatted:`, append: true});
-        postMessage({editor: 'CONSOLE', value: `\n\t- ${e.message}`, append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: `\nDeclaration file must be JSON formatted:`, append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: `\n\t- ${e.message}`, append: true});
         
-        postMessage({editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
         return;
     }
 
     // validate and set defaults
     let valid = validate(declaration);
     if (!valid) { // analyze errors
-        postMessage({editor: 'CONSOLE', value: '\nErrors in declaration file:', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\nErrors in declaration file:', append: true});
         validate.errors.forEach((ajvError) => {
             let msg = `\n\t- "${ajvError.instancePath}" ${ajvError.message}`;
-            postMessage({editor: 'CONSOLE', value: msg, append: true});
+            postMessage({action: 'console', editor: 'CONSOLE', value: msg, append: true});
         });
 
-        postMessage({editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
         return;
     }
 
     // === wrong version throws, if no version stated than skip ===
     let satisfiesVersion = semver.satisfies(hetaCompilerPackage.version, declaration.builderVersion);
     if (!satisfiesVersion) {
-        postMessage({editor: 'CONSOLE', value: `\nVersion requirements (${declaration.builderVersion}) don't meet builder version ${hetaCompilerPackage.version}.`, append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: `\nVersion requirements (${declaration.builderVersion}) don't meet builder version ${hetaCompilerPackage.version}.`, append: true});
         
-        postMessage({editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
         return;
     }
 
@@ -75,21 +73,22 @@ self.onmessage = (evt) => {
     try {
         var container = build(evt.data.url, declaration);
     } catch(error) {
-        postMessage({editor: 'CONSOLE', value: contactMessage + '\n', append: true});
-        postMessage({editor: 'CONSOLE', value: error.stack, append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: contactMessage + '\n', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: error.stack, append: true});
 
-        postMessage({editor: 'CONSOLE', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
         return;
     }
 
     if (container.hetaErrors().length > 0) {
-        postMessage({editor: 'CONSOLE', value: '\nCompilation ERROR! See logs.', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\nCompilation ERROR! See logs.', append: true});
     } else {
-        postMessage({editor: 'CONSOLE', value: '\nCompilation OK!', append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: '\nCompilation OK!', append: true});
     }
 
-    postMessage({editor: 'CONSOLE', value: '\n\n$ ', append: true});
-    return;
+    postMessage({action: 'console', editor: 'CONSOLE', value: '\n\n$ ', append: true});
+    
+    postMessage({action: 'finished'});
 };
 
 function build(url, settings) { // modules, exports
@@ -108,7 +107,7 @@ function build(url, settings) { // modules, exports
     c.logger.addTransport((level, msg, opt, levelNum) => {
         let value = `\n[${level}]\t${msg}`;
 
-        postMessage({editor: 'CONSOLE', value: value, append: true});
+        postMessage({action: 'console', editor: 'CONSOLE', value: value, append: true});
     });
 
     // file paths
@@ -183,6 +182,10 @@ function build(url, settings) { // modules, exports
         c.checkTerms();
 
         // 9. Exports
+        // create dist dir
+        var distDirectoryEntry = self.resolveLocalFileSystemSyncURL(url)
+            .getDirectory(_distDirname, {create: true});
+        // save
         if (settings.options.skipExport) {
             c.logger.warn('Exporting skipped as stated in declaration.');
         } else if (settings.options.juliaOnly) {
@@ -195,13 +198,13 @@ function build(url, settings) { // modules, exports
                 filepath: '_julia'
             });
 
-            _makeAndSave(exportItem, _distDirname);
+            _makeAndSave(exportItem, distDirectoryEntry);
         } else {
             //this.exportMany();
             let exportElements = [...c.exportStorage].map((x) => x[1]);
             c.logger.info(`Start exporting to files, total: ${exportElements.length}.`);
 
-            exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname));
+            exportElements.forEach((exportItem) => _makeAndSave(exportItem, distDirectoryEntry));
         }
       } else {
         c.logger.warn('Units checking and export were skipped because of errors in compilation.');
@@ -226,25 +229,38 @@ function build(url, settings) { // modules, exports
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 
+    // TEMP
+    let entries = distDirectoryEntry.createReader().readEntries();
+    console.log(entries);
+    
     return c;
 }
 
-function _makeAndSave(exportItem, pathPrefix) {
+function _makeAndSave(exportItem, distDirectoryEntry) {
     let logger = exportItem._container.logger;
-    let absPath = path.resolve(pathPrefix, exportItem.filepath);
+    let absPath = path.resolve(distDirectoryEntry.fullPath, exportItem.filepath); // /dist/matlab
     let msg = `Exporting to "${absPath}" of format "${exportItem.format}"...`;
     logger.info(msg);
-  
-    exportItem.make().forEach((out) => {
-      let filePath = [absPath, out.pathSuffix].join('');
-      console.log(out.content.toString())
-      /*
-      try {
-        fs.outputFileSync(filePath, out.content);
-      } catch (err) {
-        let msg =`Heta compiler cannot export to file: "${err.path}" because it is busy.`;
-        logger.error(msg, {type: 'ExportError'});
-      }
-      */
+
+    let mmm = exportItem.make();
+
+    if (mmm.length > 1) {
+        var dirToSave = distDirectoryEntry.getDirectory(exportItem.filepath, {create: true});
+    } else {
+        dirToSave = distDirectoryEntry;
+    }
+
+    mmm.forEach((out) => {
+        let fileName = (exportItem.filepath + out.pathSuffix)
+            .split('/')
+            .pop();
+        try {
+            dirToSave.getFile(fileName, {create: true})
+                .createWriter()
+                .write(new Blob(out.content));
+        } catch (e) {
+            let msg =`Heta compiler cannot export to file: "${err.path}" because it is busy.`;
+            logger.error(msg, {type: 'ExportError'});
+        }
     });
 }

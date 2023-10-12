@@ -45,12 +45,18 @@ $(() => {
     // create worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
     builderWorker.onmessage = function({data}) {
-      let he = hee.hetaEditorsStorage.get(data.editor);
-      if (data.append) {
-        let currentValue = he.monacoEditor.getValue();
-        he.monacoEditor.setValue(currentValue + data.value);
+      if (data.action === 'console') { // update editor
+        let he = hee.hetaEditorsStorage.get(data.editor);
+        if (data.append) {
+          let currentValue = he.monacoEditor.getValue();
+          he.monacoEditor.setValue(currentValue + data.value);
+        } else {
+          he.monacoEditor.setValue(data.value);
+        }
+      } else if (data.action === 'finished') { // show files
+        console.log('Build finished!!!');
       } else {
-        he.monacoEditor.setValue(data.value);
+        throw new Error(`Unknown action in worker messages: ${data.action}`);
       }
     };
 
