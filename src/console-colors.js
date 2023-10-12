@@ -13,15 +13,13 @@ monaco.languages.setMonarchTokensProvider('console', {
 });
 
 monaco.editor.defineTheme('myCoolTheme', {
-  base: 'vs-dark',
-  inherit: false,
-  colors: {
-    'editor.foreground': '#BDAE9D',
-    'editor.background': '#2A211C',
-  },
+  base: 'vs',
+  inherit: true,
+  colors: {},
   rules: [
       { token: 'custom-info', foreground: '000099'},
       { token: 'custom-warn', foreground: 'FFA500'},
       { token: 'custom-error', foreground: 'ff0000'},
   ],
 });
+monaco.editor.setTheme('myCoolTheme');
