@@ -263,11 +263,12 @@ function _makeAndSave(exportItem, distDirectoryEntry) {
             .split('/')
             .pop();
         try {
-            dirToSave.getFile(fileName, {create: true})
+            let blob = new Blob([out.content]);
+            dirToSave.getFile(fileName, {create: true, exclusive: true})
                 .createWriter()
-                .write(new Blob(out.content));
+                .write(blob);
         } catch (e) {
-            let msg =`Heta compiler cannot export to file: "${err.path}" because it is busy.`;
+            let msg =`Heta compiler cannot export to file: "${e.path}" because it is busy.`;
             logger.error(msg, {type: 'ExportError'});
         }
     });

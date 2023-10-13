@@ -1,8 +1,9 @@
+const requestFileSystem = window.webkitRequestFileSystem || window.requestFileSystem
 
 // promisify
 export function requestFileSystemPromise(type, size) {
     return new Promise((resolve, reject) => {
-      window.webkitRequestFileSystem(type, size, resolve, reject);
+      requestFileSystem(type, size, resolve, reject);
     });
 }
 
@@ -56,12 +57,3 @@ export function filePromise(entry) {
         entry.file(resolve, reject);
     });
 }
-/*
-export function readAsTextPromise(file, encoding) {
-    let reader = new FileReader();
-    return new Promise((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsText(file, encoding);
-    });
-}
-*/

@@ -23,11 +23,14 @@ const extensions = {
   'xml': {lang: 'xml'},
   'json': {lang: 'json'},
   'yml': {lang: 'yaml'},
-  //'slv': {lang: 'c'},
+  'slv': {lang: 'cpp'},
   'r': {lang: 'r'},
   //'xlsx': {lang: 'text'},
-  'cpp': {lang: 'c'},
-  'jl': {lang: 'julia'}
+  'cpp': {lang: 'cpp'},
+  'c': {lang: 'c'},
+  'jl': {lang: 'julia'},
+  html: {lang: 'html'},
+  md: {lang: 'markdown'},
 };
 
 // document ready
@@ -147,7 +150,7 @@ async function displayDistFiles(entries, hee) {
   for (let entry of entries) {
     // get extension
     let ext = entry.fullPath.split('.').pop();
-    let lang = extensions[ext]?.lang;
+    let lang = extensions[ext]?.lang || 'plaintext';
     if (!lang) throw new Error(`Unknown extension: ${ext}`);
 
     // get content
