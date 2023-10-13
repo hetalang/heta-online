@@ -1,5 +1,6 @@
 # TODO list
 
+- display logs in editor
 - Matlab language support
 - Download file
 - !!! drug and drop files

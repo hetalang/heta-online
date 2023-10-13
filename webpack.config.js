@@ -6,6 +6,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 //const CopyWebpackPlugin = require('copy-webpack-plugin');
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
+//const webpack = require('webpack');
 
 const isProduction = process.env.NODE_ENV == 'production';
 
@@ -31,6 +33,7 @@ const config = {
         }),
         new MonacoWebpackPlugin(),
         new NodePolyfillPlugin(),
+        new LodashModuleReplacementPlugin()
         // Add your plugins here
         // Learn more about plugins from https://webpack.js.org/configuration/plugins/
     ],
