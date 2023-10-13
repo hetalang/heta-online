@@ -15,10 +15,23 @@ import {PagesCollection, EditorPage, ConsolePage} from './heta-editor';
 $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
-import { requestFileSystemPromise, getFilePromise, createWriterPromise, cleanDirectoryPromise } from './promises'
+import * as prom from './promises'
+
+const extensions = {
+  'heta': {lang: 'heta'},
+  'm': {lang: 'matlab'},
+  'xml': {lang: 'xml'},
+  'json': {lang: 'json'},
+  'yml': {lang: 'yaml'},
+  //'slv': {lang: 'c'},
+  'r': {lang: 'r'},
+  //'xlsx': {lang: 'text'},
+  'cpp': {lang: 'c'},
+  'jl': {lang: 'julia'}
+};
 
 // document ready
-$(() => { 
+$(async () => {
     $('#hc-version').text(hetaPackage.version);
     $('#hc-github').attr('href', hetaPackage.repository.url);
     $('#hc-homepage').attr('href', hetaPackage.homepage);
@@ -49,10 +62,13 @@ $(() => {
 
     updateWindowHeight();
 
+    // create file system
+    let WFS = await prom.requestFileSystemPromise('TEMPORARY', 10*1024*1024);
+    
     // create worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
-    builderWorker.onmessage = function({data}) {
-      // update editor
+    builderWorker.onmessage = async function({data}) {
+      // update editor {action: 'editor', value: 'Some message', append: true}
       if (data.action === 'editor') { 
         let he = hee.hetaPagesStorage.get(data.editor);
         if (data.append) {
@@ -64,17 +80,24 @@ $(() => {
 
         return; // BRAKE
       }
-      // update console
+
+      // update console {action: 'console', value: 'Some message'}
       if (data.action === 'console') { 
-        let he = hee.hetaPagesStorage.get('CONSOLE');
-        he.appendText(data.value);
+        hee.hetaPagesStorage.get('CONSOLE').appendText(data.value);
 
         return; // BRAKE
       }
-      // show files
+
+      // show files {action: 'finished', dist: 'dist'}
       if (data.action === 'finished') {
-        console.log('Build finished!!!');
+        let distEntry = await prom.getDirectoryPromise(WFS.root, data.dist, {create: false});
+        let entries = await getFileEntriesDeep(distEntry);
+        displayDistFiles(entries, hee);
         return; // BRAKE
+      }
+
+      if (data.action === 'stop') {
+        return;
       }
       
       throw new Error(`Unknown action in worker messages: ${data.action}`);
@@ -83,14 +106,18 @@ $(() => {
     // build button
     $('#buildBtn').on('click', async () => {
       // save all files to web file system      
-      let WFS = await requestFileSystemPromise('TEMPORARY', 10*1024*1024);
-      await cleanDirectoryPromise(WFS.root);
+      await prom.cleanDirectoryPromise(WFS.root);
       for (let he of hmc.hetaPagesStorage.values()) {
         let text = he.monacoEditor.getValue();
         let data = new Blob([text], { type: "text/plain" });
-        let entry = await getFilePromise(WFS.root, he.id, {create: true});
-        let writer = await createWriterPromise(entry);
+        let entry = await prom.getFilePromise(WFS.root, he.id, {create: true});
+        let writer = await prom.createWriterPromise(entry);
         writer.write(data);
+      }
+
+      // clean old exports
+      for (let page of hee.hetaPagesStorage.values()) {
+        page.id!==hee.defaultPageName && page.delete();
       }
 
       // run builder
@@ -99,6 +126,40 @@ $(() => {
       });
     });
 });
+
+async function getFileEntriesDeep(directoryEntry) {
+  let _entries = await prom.readEntriesPromise(directoryEntry.createReader());
+  let fileEntries = _entries.reduce(async (accumulator, currentValue) => {
+    if (currentValue.isFile) {
+      var deepFileEntries = [currentValue];
+    } else {
+      deepFileEntries = await getFileEntriesDeep(currentValue);
+    }
+    return (await accumulator).concat(deepFileEntries)
+    
+  }, Promise.resolve([]));
+
+  return fileEntries;
+} 
+
+async function displayDistFiles(entries, hee) {
+
+  for (let entry of entries) {
+    // get extension
+    let ext = entry.fullPath.split('.').pop();
+    let lang = extensions[ext]?.lang;
+    if (!lang) throw new Error(`Unknown extension: ${ext}`);
+
+    // get content
+    let file = await prom.filePromise(entry);
+    let text = await file.text();
+
+    new EditorPage(entry.fullPath, {language: lang, value: text, readOnly: true})
+      .addTo(hee);
+  }
+
+  //console.log(entries); // XXX: TESTING
+}
 
 function updateWindowHeight(){
     let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();

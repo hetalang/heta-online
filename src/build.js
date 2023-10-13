@@ -87,8 +87,6 @@ self.onmessage = (evt) => {
     }
 
     postMessage({action: 'console', value: '\n\n$ ', append: true});
-    
-    postMessage({action: 'finished'});
 };
 
 function build(url, settings) { // modules, exports
@@ -233,9 +231,15 @@ function build(url, settings) { // modules, exports
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 
+    if (!c.logger.hasErrors) {
+        postMessage({action: 'finished', dist: _distDirname});
+    } else {
+        postMessage({action: 'stop'});
+    }
+
     // XXX: TEMP for testing
-    let entries = distDirectoryEntry?.createReader().readEntries();
-    console.log(entries);
+    //let entries = distDirectoryEntry?.createReader().readEntries();
+    //console.log(entries);
     
     return c;
 }

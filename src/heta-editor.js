@@ -120,7 +120,7 @@ export class Page {
 }
 
 export class EditorPage extends Page {
-    constructor(id, monacoOptions, deleteBtn=true, rightSide=false) {
+    constructor(id, monacoOptions={}, deleteBtn=true, rightSide=false) {
         super(id, deleteBtn, rightSide);
         let _monacoOptions = Object.assign({}, {
           readOnly: false,

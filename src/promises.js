@@ -38,3 +38,30 @@ export function removeEntryPromise(entry) {
         }
     });
 }
+
+export function getDirectoryPromise(entry, path, options) {
+    return new Promise((resolve, reject) => {
+        entry.getDirectory(path, options, resolve, reject);
+    });
+}
+
+export function readEntriesPromise(reader) {
+    return new Promise((resolve, reject) => {
+        reader.readEntries(resolve, reject);
+    });
+}
+
+export function filePromise(entry) {
+    return new Promise((resolve, reject) => {
+        entry.file(resolve, reject);
+    });
+}
+/*
+export function readAsTextPromise(file, encoding) {
+    let reader = new FileReader();
+    return new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsText(file, encoding);
+    });
+}
+*/
