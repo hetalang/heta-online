@@ -232,9 +232,9 @@ function build(url, settings) { // modules, exports
     }
 
     if (!c.logger.hasErrors) {
-        postMessage({action: 'finished', dist: _distDirname});
+        postMessage({action: 'finished', dist: _distDirname, logPath: _logPath});
     } else {
-        postMessage({action: 'stop'});
+        postMessage({action: 'stop', logPath: _logPath});
     }
 
     // XXX: TEMP for testing
@@ -252,16 +252,9 @@ function _makeAndSave(exportItem, distDirectoryEntry) {
 
     let mmm = exportItem.make();
 
-    if (mmm.length > 1) {
-        var dirToSave = distDirectoryEntry.getDirectory(exportItem.filepath, {create: true});
-    } else {
-        dirToSave = distDirectoryEntry;
-    }
-
     mmm.forEach((out) => {
         try {
             var fileName = exportItem.filepath + out.pathSuffix;
-            let blob = new Blob([out.content]);
             _writeFileDeep(distDirectoryEntry, fileName, new Blob([out.content]));
         } catch (e) {
             let msg =`Heta compiler cannot export to file: "${fileName}": \n\t- ${e.message}`;

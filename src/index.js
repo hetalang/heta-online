@@ -91,6 +91,21 @@ $(async () => {
         return; // BRAKE
       }
 
+      // display /output.logs
+      if (data.action === 'finished' || data.action === 'stop') {
+        try {
+          let logsEntry = await prom.getFilePromise(WFS.root, data.logPath, {create: false});
+          let file = await prom.filePromise(logsEntry);
+          let text = await file.text();
+
+          new EditorPage(logsEntry.fullPath, {language: 'plaintext', value: text, readOnly: true})
+            .addTo(hee);
+        } catch(e) {
+          if (!(e instanceof DOMException))
+          throw e;
+        }
+      }
+
       // show files {action: 'finished', dist: 'dist'}
       if (data.action === 'finished') {
         let distEntry = await prom.getDirectoryPromise(WFS.root, data.dist, {create: false});
