@@ -259,17 +259,28 @@ function _makeAndSave(exportItem, distDirectoryEntry) {
     }
 
     mmm.forEach((out) => {
-        let fileName = (exportItem.filepath + out.pathSuffix)
-            .split('/')
-            .pop();
         try {
+            var fileName = exportItem.filepath + out.pathSuffix;
             let blob = new Blob([out.content]);
-            dirToSave.getFile(fileName, {create: true, exclusive: true})
-                .createWriter()
-                .write(blob);
+            _writeFileDeep(distDirectoryEntry, fileName, new Blob([out.content]));
         } catch (e) {
-            let msg =`Heta compiler cannot export to file: "${e.path}" because it is busy.`;
+            let msg =`Heta compiler cannot export to file: "${fileName}": \n\t- ${e.message}`;
             logger.error(msg, {type: 'ExportError'});
         }
     });
+}
+
+function _writeFileDeep(directoryEntry, relPath, blob) {
+    let relPathArray = relPath.split('/');
+    let filename = relPathArray.pop();
+
+    // create directory deep
+    let currentEntry = directoryEntry;
+    for (let x of relPathArray) {
+        currentEntry = currentEntry.getDirectory(x, {create: true, exclusive: false})
+    }
+
+    currentEntry.getFile(filename, {create: true, exclusive: true})
+        .createWriter()
+        .write(blob);
 }
