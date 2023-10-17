@@ -17,13 +17,12 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 const FORMATS = { // + Exports/Modules
     json: {extension: 'json', language: 'json', template: DEFAULT_JSON_TEMPLATE}, // JSON / json
     heta: {extension: 'heta', language: 'heta', template: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
-    indexHeta: {extension: 'heta', language: 'heta', template: INDEX_HETA_TEMPLATE, defaultName: 'index'}, // HetaCode / heta
-    qspUnitsHeta: {extension: 'heta', language: 'heta', template: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units'}, // HetaCode / heta
     csv: {extension: 'csv', language: 'plaintext', template: DEFAULT_CSV_TEMPLATE}, // Table / table
     yaml: {extension: 'yml', language: 'yaml', template: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
     sbml: {extension: 'xml', language: 'xml', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
     txt: {extension: 'txt', language: 'plaintext', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    loadFile: {},
+    indexHeta: {extension: 'heta', language: 'heta', template: INDEX_HETA_TEMPLATE, defaultName: 'index'}, // HetaCode / heta
+    qspUnitsHeta: {extension: 'heta', language: 'heta', template: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units'}, // HetaCode / heta
 
     markdown: {extension: 'md', language: 'markdown'},
     mrgsolve: {extension: 'c', language: 'c'}, // Mrgsolve
@@ -31,6 +30,31 @@ const FORMATS = { // + Exports/Modules
     matlab: {extension: 'm', language: 'plaintext'}, // Matlab
     simbio: {extension: 'm', language: 'plaintext'}, // Simbio
     dbsolve: {extension: 'slv', language: 'plaintext'}, // DBSolve
+}
+
+async function _loadFile(evt) {
+  let file = $(evt.target)[0].files[0];
+  let fileFullName = file.name.split('.');
+  let ext = fileFullName.pop();
+  let name = fileFullName.join('.');
+  let text = await file.text();
+
+  let subFormatName = Object.getOwnPropertyNames(FORMATS)
+    .find((x) => FORMATS[x].extension === ext);
+  //if (!subFormatName) throw new Error(`Unsupported file extension: ${ext}`);
+  if (!subFormatName) {
+    window.alert(`Unsupported file extension: ${ext}`);
+    return; // BRAKE
+  }
+
+  let subFormat = FORMATS[subFormatName];
+  this.addUserEditor({
+    extension: subFormat.extension,
+    language: subFormat.language,
+    defaultName: name,
+    template: text
+  });
+  
 }
 
 // class storing HetaEditors
@@ -41,31 +65,18 @@ export class PagesCollection {
         this.defaultPageName = undefined;
         // set events
         this.count = 0;
-        options.newButton && $(options.newButton).on('change', (evt) => { 
-            let format = FORMATS[evt.target.value];
-            if (format.template) {
+        options.newButton && $(options.newButton).on('change', (evt) => {
+          if (evt.target.value!=='loadFile') { // from template
+              let format = FORMATS[evt.target.value];
               this.addUserEditor(format);
-            } else {
-              let fileDialog = $('<input type="file">').on('change', async (evt) => {
-                let file = $(evt.target)[0].files[0];
-                let fileFullName = file.name.split('.');
-                let ext = fileFullName.pop();
-                let name = fileFullName.join('.');
-                let text = await file.text();
-
-                let subFormat = FORMATS[ext];
-                this.addUserEditor({
-                  extension: subFormat.extension,
-                  language: subFormat.language,
-                  defaultName: name,
-                  template: text
-                });
-              });
-              fileDialog.click();
-            }
+          } else { // from file
+            let fileDialog = $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv" multiple=false/>')
+              .on('change', _loadFile.bind(this));
+            fileDialog.click();
+          }
             
-            evt.target.value = '';
-        })
+          evt.target.value = '';
+        });
     }
     get defaultPage() {
         return this.hetaPagesStorage.get(this.defaultPageName);
@@ -93,6 +104,7 @@ export class PagesCollection {
 export class Page {
   constructor(id, deleteBtn=true, rightSide=false) {
     this.id = id;
+    this.name = id.split('/').pop();
     //this._parent
 
     // create div element

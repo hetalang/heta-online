@@ -7,30 +7,30 @@ export function requestFileSystemPromise(type, size) {
     });
 }
 
-export function getFilePromise(directoryEntry, name, options) {
+export function getFilePromise(name, options) {
     return new Promise((resolve, reject) => {
-        directoryEntry.getFile(name, options, resolve, reject)
+        this.getFile(name, options, resolve, reject)
     })
 }
 
-export function createWriterPromise(entry) {
-    entry.createWriter((writer) => writer.truncate(0)); // clear the old file
+export function createWriterPromise() {
+    this.createWriter((writer) => writer.truncate(0)); // clear the old file
 
     return new Promise((resolve, reject) => {
-        entry.createWriter(resolve, reject);
+        this.createWriter(resolve, reject);
     });
 }
 
-export function cleanDirectoryPromise(directoryEntry, path, options) {
+export function cleanDirectoryPromise() {
     return new Promise((resolve, reject) => {
-        directoryEntry.createReader().readEntries((entriesArray) => {
+        this.createReader().readEntries((entriesArray) => {
             let promises = entriesArray.map(removeEntryPromise);
             Promise.all(promises).then(resolve, reject);
         }, reject);
     });
 }
 
-export function removeEntryPromise(entry) {
+function removeEntryPromise(entry) {
     return new Promise((resolve, reject) => {
         if (entry.isFile) {
             entry.remove(resolve, reject);
@@ -40,9 +40,9 @@ export function removeEntryPromise(entry) {
     });
 }
 
-export function getDirectoryPromise(entry, path, options) {
+export function getDirectoryPromise(path, options) {
     return new Promise((resolve, reject) => {
-        entry.getDirectory(path, options, resolve, reject);
+        this.getDirectory(path, options, resolve, reject);
     });
 }
 
@@ -52,8 +52,8 @@ export function readEntriesPromise(reader) {
     });
 }
 
-export function filePromise(entry) {
+export function filePromise() {
     return new Promise((resolve, reject) => {
-        entry.file(resolve, reject);
+        this.file(resolve, reject);
     });
 }

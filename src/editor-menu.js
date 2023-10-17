@@ -36,7 +36,7 @@ monaco.editor.addEditorAction({
         let a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = ed._page.id;
+        a.download = ed._page.name; // filename
         //document.body.appendChild(a);
         a.click();
         //window.URL.revokeObjectURL(url);

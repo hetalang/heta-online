@@ -90,8 +90,8 @@ $(async () => {
       // display /output.logs
       if (data.action === 'finished' || data.action === 'stop') {
         try {
-          let logsEntry = await prom.getFilePromise(WFS.root, data.logPath, {create: false});
-          let file = await prom.filePromise(logsEntry);
+          let logsEntry = await prom.getFilePromise.bind(WFS.root)(data.logPath, {create: false});
+          let file = await prom.filePromise.bind(logsEntry)();
           let text = await file.text();
 
           new EditorPage(logsEntry.fullPath, {language: 'plaintext', value: text, readOnly: true})
@@ -104,7 +104,7 @@ $(async () => {
 
       // show files {action: 'finished', dist: 'dist'}
       if (data.action === 'finished') {
-        let distEntry = await prom.getDirectoryPromise(WFS.root, data.dist, {create: false});
+        let distEntry = await prom.getDirectoryPromise.bind(WFS.root)(data.dist, {create: false});
         let entries = await getFileEntriesDeep(distEntry);
         displayDistFiles(entries, hee);
         return; // BRAKE
@@ -120,12 +120,12 @@ $(async () => {
     // build button
     $('#buildBtn').on('click', async () => {
       // save all files to web file system      
-      await prom.cleanDirectoryPromise(WFS.root);
+      await prom.cleanDirectoryPromise.bind(WFS.root)();
       for (let he of hmc.hetaPagesStorage.values()) {
         let text = he.monacoEditor.getValue();
         let data = new Blob([text], { type: "text/plain" });
-        let entry = await prom.getFilePromise(WFS.root, he.id, {create: true});
-        let writer = await prom.createWriterPromise(entry);
+        let entry = await prom.getFilePromise.bind(WFS.root)(he.id, {create: true});
+        let writer = await prom.createWriterPromise.bind(entry)();
         writer.write(data);
       }
 
@@ -165,7 +165,7 @@ async function displayDistFiles(entries, hee) {
     if (!lang) throw new Error(`Unknown extension: ${ext}`);
 
     // get content
-    let file = await prom.filePromise(entry);
+    let file = await prom.filePromise.bind(entry)();
     let text = await file.text();
 
     new EditorPage(entry.fullPath, {language: lang, value: text, readOnly: true})
