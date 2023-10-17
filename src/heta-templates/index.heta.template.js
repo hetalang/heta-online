@@ -2,7 +2,7 @@ export default `/*
     template file for creating platform
 */
 // add qsp units
-include ./qsp-units.heta
+//include ./qsp-units.heta
 
 // include module.heta type heta
 // include table.xlsx type table with { sheet: 0, omitRows: 3 }

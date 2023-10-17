@@ -1,6 +1,8 @@
 # TODO list
 
 - Matlab language support
+- ! load file
+- XLSX load
 - !!! drug and drop files
 - Download project button
 - Information modal window

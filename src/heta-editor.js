@@ -6,6 +6,7 @@ import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
 import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
 import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
 import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
+import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 import './heta-colors';
 import './console-colors';
 import './editor-menu';
@@ -16,10 +17,13 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 const FORMATS = { // + Exports/Modules
     json: {extension: 'json', language: 'json', template: DEFAULT_JSON_TEMPLATE}, // JSON / json
     heta: {extension: 'heta', language: 'heta', template: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
-    qspUnitsHeta: {extension: 'heta', language: 'heta', template: QSP_UNITS_HETA_TEMPLATE}, // HetaCode / heta
+    indexHeta: {extension: 'heta', language: 'heta', template: INDEX_HETA_TEMPLATE, defaultName: 'index'}, // HetaCode / heta
+    qspUnitsHeta: {extension: 'heta', language: 'heta', template: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units'}, // HetaCode / heta
     csv: {extension: 'csv', language: 'plaintext', template: DEFAULT_CSV_TEMPLATE}, // Table / table
     yaml: {extension: 'yml', language: 'yaml', template: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
     sbml: {extension: 'xml', language: 'xml', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
+    txt: {extension: 'txt', language: 'plaintext', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
+    loadFile: {},
 
     markdown: {extension: 'md', language: 'markdown'},
     mrgsolve: {extension: 'c', language: 'c'}, // Mrgsolve
@@ -39,7 +43,27 @@ export class PagesCollection {
         this.count = 0;
         options.newButton && $(options.newButton).on('change', (evt) => { 
             let format = FORMATS[evt.target.value];
-            this.addUserEditor(format);
+            if (format.template) {
+              this.addUserEditor(format);
+            } else {
+              let fileDialog = $('<input type="file">').on('change', async (evt) => {
+                let file = $(evt.target)[0].files[0];
+                let fileFullName = file.name.split('.');
+                let ext = fileFullName.pop();
+                let name = fileFullName.join('.');
+                let text = await file.text();
+
+                let subFormat = FORMATS[ext];
+                this.addUserEditor({
+                  extension: subFormat.extension,
+                  language: subFormat.language,
+                  defaultName: name,
+                  template: text
+                });
+              });
+              fileDialog.click();
+            }
+            
             evt.target.value = '';
         })
     }
@@ -50,7 +74,7 @@ export class PagesCollection {
         if (format===undefined) throw new Error('Unknown Heta module format.');
         // prompt of module name
         let title = 'File name';
-        let fileName = `module${this.count++}`;
+        let fileName = format.defaultName || `module${this.count++}`;
         do {
             fileName = window.prompt(title, fileName);
             title = `"${fileName}.${format.extension}" already exist. Choose another name.`

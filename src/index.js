@@ -1,5 +1,4 @@
 import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
-import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
 import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 
 // Add styles and fonts
@@ -47,12 +46,9 @@ $(async () => {
     });
 
     new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
-      .addTo(hmc);
-    new EditorPage('qsp-units.heta', {value: QSP_UNITS_HETA_TEMPLATE, language: 'heta'}, true, false)
-      .addTo(hmc);
-    new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, false, false)
-      .addTo(hmc, true);
-
+      .addTo(hmc,true); // default page
+    new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
+      .addTo(hmc, false);
 
     // heta exports collection
     let hee = window.hee = new PagesCollection({
