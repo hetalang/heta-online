@@ -1,12 +1,14 @@
 // templates
 
 import DEFAULT_HETA_TEMPLATE from './heta-templates/default.heta.template';
+import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
 import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
 import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
 import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
 import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
 import './heta-colors';
 import './console-colors';
+import './editor-menu';
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
@@ -14,6 +16,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 const FORMATS = { // + Exports/Modules
     json: {extension: 'json', language: 'json', template: DEFAULT_JSON_TEMPLATE}, // JSON / json
     heta: {extension: 'heta', language: 'heta', template: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
+    qspUnitsHeta: {extension: 'heta', language: 'heta', template: QSP_UNITS_HETA_TEMPLATE}, // HetaCode / heta
     csv: {extension: 'csv', language: 'plaintext', template: DEFAULT_CSV_TEMPLATE}, // Table / table
     yaml: {extension: 'yml', language: 'yaml', template: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
     sbml: {extension: 'xml', language: 'xml', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
@@ -124,10 +127,12 @@ export class EditorPage extends Page {
         super(id, deleteBtn, rightSide);
         let _monacoOptions = Object.assign({}, {
           readOnly: false,
-          minimap: {enabled: false}
+          minimap: {enabled: false},
+          //automaticLayout: true
         }, monacoOptions)
 
         this.monacoEditor = monaco.editor.create(this.editorContainer, _monacoOptions);
+        this.monacoEditor._page = this; // XXX: bad solution
     }
     delete() {
       this.monacoEditor.dispose();
