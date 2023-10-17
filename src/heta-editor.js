@@ -91,6 +91,8 @@ export class PagesCollection {
             title = `"${fileName}.${format.extension}" already exist. Choose another name.`
         } while (this.hetaPagesStorage.has(`${fileName}.${format.extension}`))
         
+        if (!fileName) return; // BRAKE
+        
         new EditorPage(`${fileName}.${format.extension}`, {value: format.template, language: format.language}, true, false)
           .addTo(this);
     }

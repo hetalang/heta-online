@@ -1,20 +1,17 @@
 # TODO list
 
-- Matlab language support
-- ! load file
-- XLSX load
-- !!! drug and drop files
+- ! XLSX load
+- drug and drop files
 - Download project button
 - Information modal window
-- Dispaly non-text files: XSLX
+- ! Dispaly non-text files: XLSX
 - nice css optimization
 - switch monaco themes
 - platform.yml
-- css file format
-- console at the bottom
-- file content manager
+? console at the bottom
+? file content manager
+- Matlab language support
 - support of Firefox: 
     https://developer.mozilla.org/en-US/docs/Web/API/File_and_Directory_Entries_API/Firefox_support
 
 ## Errors
-
