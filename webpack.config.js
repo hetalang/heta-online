@@ -15,7 +15,7 @@ const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader
 
 const config = {
     entry: {
-        'app': './src/index.js',
+        'app': './src/app.js',
         //'build': './src/build.js',
     },
     output: {

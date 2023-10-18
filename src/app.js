@@ -9,7 +9,7 @@ import 'font-awesome/css/font-awesome.min.css';
 import $ from 'jquery';
 //window.$ = $; // set as global
 
-import {PagesCollection, EditorPage, ConsolePage} from './heta-editor';
+import {PagesCollection, EditorPage, ConsolePage} from './page';
 
 $(window).on('resize', updateWindowHeight);
 
@@ -17,17 +17,17 @@ import hetaPackage from 'heta-compiler/package';
 import * as prom from './promises'
 
 const extensions = {
-  'heta': {lang: 'heta'},
-  'm': {lang: 'matlab'},
-  'xml': {lang: 'xml'},
-  'json': {lang: 'json'},
-  'yml': {lang: 'yaml'},
-  'slv': {lang: 'cpp'},
-  'r': {lang: 'r'},
+  heta: {lang: 'heta'},
+  m: {lang: 'matlab'},
+  xml: {lang: 'xml'},
+  json: {lang: 'json'},
+  yml: {lang: 'yaml'},
+  slv: {lang: 'cpp'},
+  r: {lang: 'r'},
   //'xlsx': {lang: 'text'},
-  'cpp': {lang: 'cpp'},
-  'c': {lang: 'c'},
-  'jl': {lang: 'julia'},
+  cpp: {lang: 'cpp'},
+  c: {lang: 'c'},
+  jl: {lang: 'julia'},
   html: {lang: 'html'},
   md: {lang: 'markdown'},
 };
