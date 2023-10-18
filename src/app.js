@@ -9,7 +9,7 @@ import 'font-awesome/css/font-awesome.min.css';
 import $ from 'jquery';
 //window.$ = $; // set as global
 
-import {PagesCollection, EditorPage, ConsolePage} from './page';
+import { PagesCollection, EditorPage, ConsolePage, InfoPage } from './page';
 
 $(window).on('resize', updateWindowHeight);
 
@@ -40,10 +40,7 @@ $(async () => {
     //console.log(hetaPackage);
 
     // heta modules collection
-    let hmc = window.hmc = new PagesCollection({
-      newButton: '#newButton',
-      panel: '#leftPanel'
-    });
+    let hmc = window.hmc = new PagesCollection('#leftPanel', '#newButton');
 
     new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
       .addTo(hmc,true); // default page
@@ -51,9 +48,7 @@ $(async () => {
       .addTo(hmc, false);
 
     // heta exports collection
-    let hee = window.hee = new PagesCollection({
-      panel: '#rightPanel'
-    });
+    let hee = window.hee = new PagesCollection('#rightPanel');
 
     new ConsolePage('CONSOLE')
       .addTo(hee, true)
@@ -122,8 +117,7 @@ $(async () => {
       // save all files to web file system      
       await prom.cleanDirectoryPromise.bind(WFS.root)();
       for (let he of hmc.hetaPagesStorage.values()) {
-        let text = he.monacoEditor.getValue();
-        let data = new Blob([text], { type: "text/plain" });
+        let data = he.getContent();
         let entry = await prom.getFilePromise.bind(WFS.root)(he.id, {create: true});
         let writer = await prom.createWriterPromise.bind(entry)();
         writer.write(data);

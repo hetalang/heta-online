@@ -15,14 +15,15 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 const FORMATS = { // + Exports/Modules
-    json: {extension: 'json', language: 'json', template: DEFAULT_JSON_TEMPLATE}, // JSON / json
-    heta: {extension: 'heta', language: 'heta', template: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
-    csv: {extension: 'csv', language: 'plaintext', template: DEFAULT_CSV_TEMPLATE}, // Table / table
-    yaml: {extension: 'yml', language: 'yaml', template: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
-    sbml: {extension: 'xml', language: 'xml', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    txt: {extension: 'txt', language: 'plaintext', template: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    indexHeta: {extension: 'heta', language: 'heta', template: INDEX_HETA_TEMPLATE, defaultName: 'index'}, // HetaCode / heta
-    qspUnitsHeta: {extension: 'heta', language: 'heta', template: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units'}, // HetaCode / heta
+    json: {extension: 'json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE}, // JSON / json
+    heta: {extension: 'heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
+    csv: {extension: 'csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE}, // Table / table
+    yaml: {extension: 'yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
+    sbml: {extension: 'xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
+    txt: {extension: 'txt', language: 'plaintext', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
+    indexHeta: {extension: 'heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index'}, // HetaCode / heta
+    qspUnitsHeta: {extension: 'heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units'}, // HetaCode / heta
+    xlsx: {extension: 'xlsx', pageType: 'info'},
 
     markdown: {extension: 'md', language: 'markdown'},
     mrgsolve: {extension: 'c', language: 'c'}, // Mrgsolve
@@ -32,58 +33,60 @@ const FORMATS = { // + Exports/Modules
     dbsolve: {extension: 'slv', language: 'plaintext'}, // DBSolve
 }
 
-async function _loadFile(evt) {
-  let file = $(evt.target)[0].files[0];
-  let fileFullName = file.name.split('.');
-  let ext = fileFullName.pop();
-  let name = fileFullName.join('.');
-  let text = await file.text();
-
-  let subFormatName = Object.getOwnPropertyNames(FORMATS)
-    .find((x) => FORMATS[x].extension === ext);
-  //if (!subFormatName) throw new Error(`Unsupported file extension: ${ext}`);
-  if (!subFormatName) {
-    window.alert(`Unsupported file extension: ${ext}`);
-    return; // BRAKE
-  }
-
-  let subFormat = FORMATS[subFormatName];
-  this.addUserEditor({
-    extension: subFormat.extension,
-    language: subFormat.language,
-    defaultName: name,
-    template: text
-  });
-  
-}
-
 // class storing HetaEditors
 export class PagesCollection {
-    constructor(options = {}) {
-        this.panel = options.panel;
+    constructor(panel, newButton) {
+        this.panel = panel;
         this.hetaPagesStorage = new Map();
         this.defaultPageName = undefined;
         // set events
         this.count = 0;
-        options.newButton && $(options.newButton).on('change', (evt) => {
-          if (evt.target.value!=='loadFile') { // from template
-              let format = FORMATS[evt.target.value];
-              this.addUserEditor(format);
-          } else { // from file
-            let fileDialog = $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv" multiple=false/>')
-              .on('change', _loadFile.bind(this));
-            fileDialog.click();
+        newButton && $(newButton).on('change', (evt) => {
+          if (evt.target.value==='loadFile') { // from file
+            $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=false/>')
+              .on('change', (evt) => this.addPageFromFile($(evt.target)[0].files[0]))
+              .click();
+          } else { // from template
+            let format = FORMATS[evt.target.value];
+            this.addPage(format);
           }
-            
           evt.target.value = '';
         });
     }
+
+    // add page based on file
+    async addPageFromFile(file) { // approximately the same as displayDistFiles()
+      let fileFullName = file.name.split('.');
+      let ext = fileFullName.pop();
+      let name = fileFullName.join('.');
+    
+      let subFormatName = Object.getOwnPropertyNames(FORMATS)
+        .find((x) => FORMATS[x].extension === ext);
+      if (!subFormatName) {
+        window.alert(`Unsupported file extension: ${ext}`);
+        return; // BRAKE
+      }
+      
+      let format = FORMATS[subFormatName];
+      let page = this.addPage({
+        extension: format.extension,
+        pageType: format.pageType,
+        language: format.language,
+        defaultName: name,
+      });
+      await page.setContent(file);
+
+      return page;
+    }
+
     get defaultPage() {
         return this.hetaPagesStorage.get(this.defaultPageName);
     }
-    addUserEditor(format) {
+
+    // add page based on options
+    addPage(format) {
         if (format===undefined) throw new Error('Unknown Heta module format.');
-        // prompt of module name
+        // prompt for module name
         let title = 'File name';
         let fileName = format.defaultName || `module${this.count++}`;
         do {
@@ -91,10 +94,15 @@ export class PagesCollection {
             title = `"${fileName}.${format.extension}" already exist. Choose another name.`
         } while (this.hetaPagesStorage.has(`${fileName}.${format.extension}`))
         
-        if (!fileName) return; // BRAKE
-        
-        new EditorPage(`${fileName}.${format.extension}`, {value: format.template, language: format.language}, true, false)
-          .addTo(this);
+        if (!!fileName && format.pageType==='info') {
+          var page = new InfoPage(`${fileName}.${format.extension}`, true, false)
+            .addTo(this);
+        } else if (!!fileName) {        
+          page = new EditorPage(`${fileName}.${format.extension}`, {value: format.defaultValue, language: format.language}, true, false)
+            .addTo(this);
+        }
+
+        return page;
     }
     hideEditors() {
         $(this.panel).find('.hetaModuleBtn').removeClass('w3-bottombar w3-border-green');
@@ -107,7 +115,7 @@ export class Page {
   constructor(id, deleteBtn=true, rightSide=false) {
     this.id = id;
     this.name = id.split('/').pop();
-    //this._parent
+    //this._parent = undefined;
 
     // create div element
     this.editorContainer = $(`<div class="hetaModuleContainer" style="height:100%;"></div>`)[0];
@@ -182,6 +190,17 @@ export class EditorPage extends Page {
 
       return this;
     }
+    async setContent(file) {
+      let text = await file.text();
+      this.monacoEditor.setValue(text);
+
+      return this;
+    }
+    getContent() {
+      let data = new Blob([this.monacoEditor.getValue()], { type: "text/plain" });
+
+      return data;
+    }
 }
 
 export class ConsolePage extends EditorPage {
@@ -191,5 +210,31 @@ export class ConsolePage extends EditorPage {
   appendText(text) {
     let currentValue = this.monacoEditor.getValue();
     this.monacoEditor.setValue(currentValue + text);
+  }
+}
+
+export class InfoPage extends Page {
+  constructor(id, deleteBtn=true, rightSide=false) {
+      super(id, deleteBtn, rightSide);
+  }
+  async setContent(file) {
+    this._file = file;
+
+    let url = window.URL.createObjectURL(file);
+    let str = `<div class="w3-container">
+      <h3>Module info:</h3>
+      <p>name: <i>${file.name}</i></p>
+      <p>type: <i>${file.type}</i></p>
+      <p>lastModifiedDate: <i>${file.lastModifiedDate}</i></p>
+      <p>size: <i>${Math.round(file.size/1024)} Kb</i></p>
+      <p><a href="${url}" download="${this.name}">SAVE</a></p>
+    </div>`;
+    
+    $(str).appendTo(this.editorContainer);
+
+    return this;
+  }
+  getContent() {
+    return this._file;
   }
 }

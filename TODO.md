@@ -1,6 +1,6 @@
 # TODO list
 
-- ! XLSX load
+- hot keys for InfoPage
 - drug and drop files
 - Download project button
 - Information modal window
