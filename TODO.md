@@ -1,7 +1,7 @@
 # TODO list
 
 - hot keys for InfoPage
-- drug and drop files
+- drug and drop directory
 - Download project button
 - ! Information modal window
 - nice css optimization

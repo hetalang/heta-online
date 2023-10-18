@@ -1,0 +1,7 @@
+.dropping {
+    background: -webkit-repeating-radial-gradient(white, #fc0 5px);
+    background: -moz-repeating-radial-gradient(white, #fc0 5px);
+    background: -ms-repeating-radial-gradient(white, #fc0 5px);
+    background: -o-repeating-radial-gradient(white, #fc0 5px);
+    background: repeating-radial-gradient(white, #fc0 5px);
+}

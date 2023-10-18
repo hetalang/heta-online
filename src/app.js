@@ -4,12 +4,14 @@ import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 // Add styles and fonts
 import 'w3-css/w3.css';
 import 'font-awesome/css/font-awesome.min.css';
+import './dropping.css';
 
 // Auxilary
 import $ from 'jquery';
 //window.$ = $; // set as global
 
 import { PagesCollection, EditorPage, ConsolePage, InfoPage } from './page';
+import DnDFileController from './drug-and-drop';
 
 $(window).on('resize', updateWindowHeight);
 
@@ -42,8 +44,13 @@ $(async () => {
 
     // create file system
     let WFS = await prom.requestFileSystemPromise('TEMPORARY', 10*1024*1024);
+
+    // Drag and Drop
+    new DnDFileController('body', async (file) => {
+      await hmc.addPageFromFile(file, file.name, true);
+    });
     
-    // create worker
+    // create Worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
     builderWorker.onmessage = async function({data}) {
       // update editor {action: 'editor', value: 'Some message', append: true}
