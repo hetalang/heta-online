@@ -3,7 +3,7 @@
 
 on:
   push:
-    branches: [ master, '*' ]
+    branches: [ master ]
 
 name: Build and Deploy
 
@@ -21,11 +21,18 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 18.x
-    - run: |
+    - name: Build application
+      run: |
         npm ci
         npm run build
         #mkdir -p site/online
         #cp -rf dist/* site/online
       env:
         CI: true
-
+    - name: Deploy to "gh-pages"
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: . # The folder the action should deploy.
+        CLEAN: false
