@@ -1,2 +1,2 @@
-# heta-online
+# GitHub Pages
 
