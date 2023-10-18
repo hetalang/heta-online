@@ -3,8 +3,7 @@
 - hot keys for InfoPage
 - drug and drop files
 - Download project button
-- Information modal window
-- ! Dispaly non-text files: XLSX
+- ! Information modal window
 - nice css optimization
 - switch monaco themes
 - platform.yml

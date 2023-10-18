@@ -20,12 +20,13 @@ const FORMATS = { // + Exports/Modules
     csv: {extension: 'csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE}, // Table / table
     yaml: {extension: 'yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
     sbml: {extension: 'xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    txt: {extension: 'txt', language: 'plaintext', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
     indexHeta: {extension: 'heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta'}, // HetaCode / heta
     qspUnitsHeta: {extension: 'heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta'}, // HetaCode / heta
     xlsx: {extension: 'xlsx', pageType: 'info'},
 
-    markdown: {extension: 'md', language: 'markdown'},
+    slv: {extension: 'slv', pageType: 'info'},
+    txt: {extension: 'txt', language: 'plaintext'},
+    markdown: {extension: 'md', language: 'markdown'}, // Markdown
     mrgsolve: {extension: 'c', language: 'c'}, // Mrgsolve
     julia: {extension: 'jl', language: 'julia'}, // Julia
     matlab: {extension: 'm', language: 'plaintext'}, // Matlab
@@ -35,8 +36,7 @@ const FORMATS = { // + Exports/Modules
     r: {extension: 'r', language: 'r'}, // R
     c: {extension: 'c', language: 'c'}, // C
     html: {extension: 'html', language: 'html'}, // HTML
-    md: {extension: 'md', language: 'markdown'}, // Markdown
-}
+};
 
 // class storing HetaEditors
 export class PagesCollection {
@@ -234,7 +234,7 @@ export class InfoPage extends Page {
       <p>type: <i>${file.type}</i></p>
       <p>lastModifiedDate: <i>${file.lastModifiedDate}</i></p>
       <p>size: <i>${Math.round(file.size/1024)} Kb</i></p>
-      <p><a href="${url}" download="${this.name}">SAVE</a></p>
+      <p><a href="${url}" download="${this.name}">DOWNLOAD</a></p>
     </div>`;
     
     $(str).appendTo(this.editorContainer);
