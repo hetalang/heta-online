@@ -21,8 +21,8 @@ const FORMATS = { // + Exports/Modules
     yaml: {extension: 'yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
     sbml: {extension: 'xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
     txt: {extension: 'txt', language: 'plaintext', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    indexHeta: {extension: 'heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index'}, // HetaCode / heta
-    qspUnitsHeta: {extension: 'heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units'}, // HetaCode / heta
+    indexHeta: {extension: 'heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta'}, // HetaCode / heta
+    qspUnitsHeta: {extension: 'heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta'}, // HetaCode / heta
     xlsx: {extension: 'xlsx', pageType: 'info'},
 
     markdown: {extension: 'md', language: 'markdown'},
@@ -31,6 +31,11 @@ const FORMATS = { // + Exports/Modules
     matlab: {extension: 'm', language: 'plaintext'}, // Matlab
     simbio: {extension: 'm', language: 'plaintext'}, // Simbio
     dbsolve: {extension: 'slv', language: 'plaintext'}, // DBSolve
+    cpp: {extension: 'cpp', language: 'cpp'}, // C++
+    r: {extension: 'r', language: 'r'}, // R
+    c: {extension: 'c', language: 'c'}, // C
+    html: {extension: 'html', language: 'html'}, // HTML
+    md: {extension: 'md', language: 'markdown'}, // Markdown
 }
 
 // class storing HetaEditors
@@ -55,10 +60,8 @@ export class PagesCollection {
     }
 
     // add page based on file
-    async addPageFromFile(file) { // approximately the same as displayDistFiles()
-      let fileFullName = file.name.split('.');
-      let ext = fileFullName.pop();
-      let name = fileFullName.join('.');
+    async addPageFromFile(file, filepath=file.name, usePrompt=true) { // approximately the same as displayDistFiles()
+      let ext = file.name.split('.').pop();
     
       let subFormatName = Object.getOwnPropertyNames(FORMATS)
         .find((x) => FORMATS[x].extension === ext);
@@ -72,8 +75,8 @@ export class PagesCollection {
         extension: format.extension,
         pageType: format.pageType,
         language: format.language,
-        defaultName: name,
-      });
+        defaultName: filepath,
+      }, usePrompt);
       await page.setContent(file);
 
       return page;
@@ -84,25 +87,29 @@ export class PagesCollection {
     }
 
     // add page based on options
-    addPage(format) {
-        if (format===undefined) throw new Error('Unknown Heta module format.');
-        // prompt for module name
-        let title = 'File name';
-        let fileName = format.defaultName || `module${this.count++}`;
-        do {
-            fileName = window.prompt(title, fileName);
-            title = `"${fileName}.${format.extension}" already exist. Choose another name.`
-        } while (this.hetaPagesStorage.has(`${fileName}.${format.extension}`))
+    addPage(format, usePrompt=true) {
+        let fileName = usePrompt ? this.checkPageName(format) : format.defaultName
         
         if (!!fileName && format.pageType==='info') {
-          var page = new InfoPage(`${fileName}.${format.extension}`, true, false)
+          var page = new InfoPage(fileName, true, false)
             .addTo(this);
         } else if (!!fileName) {        
-          page = new EditorPage(`${fileName}.${format.extension}`, {value: format.defaultValue, language: format.language}, true, false)
+          page = new EditorPage(fileName, {value: format.defaultValue, language: format.language}, true, false)
             .addTo(this);
         }
 
         return page;
+    }
+    checkPageName(format) {
+      // prompt for module name
+      let fileName = format.defaultName || `module${this.count++}.${format.extension}`;
+      let title = 'File name';
+      do {
+          fileName = window.prompt(title, fileName);
+          title = `"${fileName}" already exist. Choose another name.`
+      } while (this.hetaPagesStorage.has(fileName))
+
+      return fileName;
     }
     hideEditors() {
         $(this.panel).find('.hetaModuleBtn').removeClass('w3-bottombar w3-border-green');
@@ -223,7 +230,7 @@ export class InfoPage extends Page {
     let url = window.URL.createObjectURL(file);
     let str = `<div class="w3-container">
       <h3>Module info:</h3>
-      <p>name: <i>${file.name}</i></p>
+      <p>source name: <i>${file.name}</i></p>
       <p>type: <i>${file.type}</i></p>
       <p>lastModifiedDate: <i>${file.lastModifiedDate}</i></p>
       <p>size: <i>${Math.round(file.size/1024)} Kb</i></p>

@@ -16,22 +16,6 @@ $(window).on('resize', updateWindowHeight);
 import hetaPackage from 'heta-compiler/package';
 import * as prom from './promises'
 
-const extensions = {
-  heta: {lang: 'heta'},
-  m: {lang: 'matlab'},
-  xml: {lang: 'xml'},
-  json: {lang: 'json'},
-  yml: {lang: 'yaml'},
-  slv: {lang: 'cpp'},
-  r: {lang: 'r'},
-  //'xlsx': {lang: 'text'},
-  cpp: {lang: 'cpp'},
-  c: {lang: 'c'},
-  jl: {lang: 'julia'},
-  html: {lang: 'html'},
-  md: {lang: 'markdown'},
-};
-
 // document ready
 $(async () => {
     $('#hc-version').text(hetaPackage.version);
@@ -151,19 +135,9 @@ async function getFileEntriesDeep(directoryEntry) {
 } 
 
 async function displayDistFiles(entries, hee) {
-
   for (let entry of entries) {
-    // get extension
-    let ext = entry.fullPath.split('.').pop();
-    let lang = extensions[ext]?.lang || 'plaintext';
-    if (!lang) throw new Error(`Unknown extension: ${ext}`);
-
-    // get content
     let file = await prom.filePromise.bind(entry)();
-    let text = await file.text();
-
-    new EditorPage(entry.fullPath, {language: lang, value: text, readOnly: true})
-      .addTo(hee);
+    hee.addPageFromFile(file, entry.fullPath, false);
   }
 
   //console.log(entries); // XXX: TESTING
