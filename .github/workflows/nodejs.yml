@@ -3,7 +3,7 @@
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, run_* ]
 
 name: Build and Deploy
 
@@ -24,7 +24,7 @@ jobs:
     - name: Build application
       run: |
         npm ci
-        npm run build
+        npm run build:dev
         #mkdir -p site/online
         #cp -rf dist/* site/online
       env:
