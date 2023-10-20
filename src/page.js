@@ -1,5 +1,6 @@
-// templates
+/* global $ */
 
+// templates
 import DEFAULT_HETA_TEMPLATE from './heta-templates/default.heta.template';
 import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
 import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
@@ -11,7 +12,6 @@ import './heta-colors';
 import './console-colors';
 import './editor-menu';
 
-import $ from 'jquery';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 const FORMATS = { // + Exports/Modules

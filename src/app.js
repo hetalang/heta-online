@@ -1,14 +1,12 @@
-import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
-import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
+/* global $ */
 
 // Add styles and fonts
 import 'w3-css/w3.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './dropping.css';
 
-// Auxilary
-import $ from 'jquery';
-//window.$ = $; // set as global
+import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
+import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 
 import { PagesCollection, EditorPage, ConsolePage, InfoPage } from './page';
 import DnDFileController from './drug-and-drop';
@@ -21,9 +19,8 @@ import * as prom from './promises'
 // document ready
 $(async () => {
     $('#hc-version').text(hetaPackage.version);
-    $('#hc-github').attr('href', hetaPackage.repository.url);
-    $('#hc-homepage').attr('href', hetaPackage.homepage);
-    //console.log(hetaPackage);
+    $('#hc-github').attr('href', 'https://github.com/hetalang/heta-online/'); // hetaPackage.repository.url
+    $('#hc-homepage').attr('href', 'https://hetalang.github.io/#/'); // hetaPackage.homepage
 
     // heta modules collection
     let hmc = window.hmc = new PagesCollection('#leftPanel', '#newButton');

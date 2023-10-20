@@ -1,4 +1,4 @@
-import * as monaco from 'monaco-editor';//'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 monaco.languages.register({id: 'console'});
 monaco.languages.setMonarchTokensProvider('console', {

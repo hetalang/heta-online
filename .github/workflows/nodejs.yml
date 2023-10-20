@@ -24,9 +24,9 @@ jobs:
     - name: Build application
       run: |
         npm ci
-        npm run build:dev
+        npm run build
         #mkdir -p site/online
-        #cp -rf dist/* site/online
+        cp -rf public/* dist
       env:
         CI: true
     - name: Deploy to "gh-pages"

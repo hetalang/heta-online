@@ -1,13 +1,15 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
 const path = require('path');
+const webpack = require('webpack');
+//const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-//const CopyWebpackPlugin = require('copy-webpack-plugin');
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
-//const webpack = require('webpack');
+const TerserPlugin = require("terser-webpack-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 const isProduction = process.env.NODE_ENV == 'production';
 
@@ -15,13 +17,16 @@ const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader
 
 const config = {
     entry: {
-        'app': './src/app.js',
-        //'build': './src/build.js',
+        //'jquery': './src/jquery.js', // jquery lib
+        //'app': {import: './src/app.js', dependOn: 'jquery'},
+        'app': {import: './src/app.js'},
+        //'style': './src/style.js', // CSS files
     },
+    devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'js/[name].[contenthash].js',
-        libraryTarget: 'umd',
+        //libraryTarget: 'umd',
     },
     devServer: {
         open: true,
@@ -31,10 +36,14 @@ const config = {
         new HtmlWebpackPlugin({
             template: 'src/index.html',
         }),
-        new MonacoWebpackPlugin(),
+        new MonacoWebpackPlugin({
+            languages: ['json', 'plaintext', 'yaml', 'xml', 'markdown', 'c', 'julia', 'cpp', 'r', 'html']
+        }),
         new NodePolyfillPlugin(),
-        new LodashModuleReplacementPlugin()
-        // Add your plugins here
+        new LodashModuleReplacementPlugin(),
+        new webpack.ProvidePlugin({
+            $: 'jquery'
+        }),
         // Learn more about plugins from https://webpack.js.org/configuration/plugins/
     ],
     module: {
@@ -56,7 +65,7 @@ const config = {
                 loader: 'nunjucks-loader',
                 options: {
                     config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env',
-                    //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile' warning
+                    //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile'
                 }
             }
             // Add your rules for custom modules here
@@ -71,7 +80,19 @@ module.exports = () => {
         
         config.plugins.push(new MiniCssExtractPlugin());
         
-        
+        config.optimization = {
+            minimize: true,
+            minimizer: [
+                new TerserPlugin({
+                    terserOptions: {keep_classnames: true}
+                }),
+                new CssMinimizerPlugin(),
+            ],
+            splitChunks: {
+                chunks: 'all',
+                minSize: 10000
+            },
+        };
     } else {
         config.mode = 'development';
     }
