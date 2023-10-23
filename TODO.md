@@ -1,12 +1,12 @@
 # TODO list
 
+- google analytics
 - hot keys for InfoPage
 - drug and drop directory
 - Download project button
-- ! Information modal window
 - nice css styles
 - switch monaco themes
-- platform.yml
+? platform.yml
 ? console at the bottom
 ? file content manager
 - support of smartphones

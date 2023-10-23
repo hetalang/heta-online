@@ -6,6 +6,34 @@
         <title>Heta compiler online</title>
     </head>
     <body>
+      <!-- The Modal -->
+        <div id="modalDiv" class="w3-modal">
+          <div class="w3-modal-content">
+            <div class="w3-container">
+              <span 
+                onclick="document.getElementById('modalDiv').style.display='none'"
+                class="w3-button w3-display-topright"
+                >&times;
+              </span>
+              <h2>Info</h2>
+              <p id="errMessage" class="w3-text-red"></p>
+              <p><i>This is a web application for converting from Heta modeling platforms into different modeling formats and software.</i></p>
+              <p>To read more about Heta follow the <a href="https://hetalang.github.io/#/" target="_blank">Heta project</a>.</p>
+              <p>Heta online is serverless app, i.e. <strong>it does not uploads the code</strong> to the server.</p>
+              <p>
+                Browsers support:
+                  <ul>
+                    <li>Chrome</li>
+                    <li>Edge</li>
+                    <li>All other Chromium-based</li>
+                  </ul>
+              </p>
+              <p class="w3-right"><a href="https://insysbio.com" target="_blank">InSysBio CY</a></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- The Header -->
         <div id="topDiv" class="w3-row">
             <div class="w3-rest w3-deep-purple w3-display-container" style="height:50px;">
                 <div class="w3-display-left" >
@@ -16,7 +44,7 @@
                     <i class="w3-bar-item">Heta compiler of version <span id="hc-version">0.0.0</span></i>
                     <a id="hc-download" href="#" class="w3-button w3-disabled"><i class="fa fa-download"></i></a>
                     <a id="hc-github" href="#" class="w3-button"><i class="fa fa-github"></i></a>
-                    <a id="hc-homepage" href="#" class="w3-button"><i class="fa fa-question"></i></a>
+                    <a id="hc-info" href="#" class="w3-button"><i class="fa fa-question"></i></a>
                   </div>
                 </div>
             </div>
@@ -38,7 +66,7 @@
                     <option value="sbml">*.xml</option>
                     <option value="loadFile">Load file</option>
                   </select>
-                  <a id="buildBtn" href="#" class="w3-button  w3-small w3-right"><i class="fa fa-rocket"></i></a>
+                  <a id="buildBtn" href="#" class="w3-button w3-small w3-right w3-disabled"><i class="fa fa-rocket"></i></a>
                 </div>
               </div>
               

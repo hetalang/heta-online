@@ -20,7 +20,8 @@ import * as prom from './promises'
 $(async () => {
     $('#hc-version').text(hetaPackage.version);
     $('#hc-github').attr('href', 'https://github.com/hetalang/heta-online/'); // hetaPackage.repository.url
-    $('#hc-homepage').attr('href', 'https://hetalang.github.io/#/'); // hetaPackage.homepage
+    //$('#hc-homepage').attr('href', 'https://hetalang.github.io/#/'); // hetaPackage.homepage
+    $('#hc-info').on('click', () => $('#modalDiv').show());
 
     // heta modules collection
     let hmc = window.hmc = new PagesCollection('#leftPanel', '#newButton');
@@ -38,6 +39,13 @@ $(async () => {
       .appendText('$ ');
 
     updateWindowHeight();
+
+    // check browser support
+    if (!window.webkitRequestFileSystem && !window.requestFileSystem) {
+      $('#errMessage').text('Unsupported browser. This will be fixed in future releases.');
+      $('#modalDiv').show();
+      return; // BRAKE
+    }
 
     // create file system
     let WFS = await prom.requestFileSystemPromise('TEMPORARY', 10*1024*1024);
@@ -101,6 +109,7 @@ $(async () => {
     };
 
     // build button
+    $('#buildBtn').removeClass('w3-disabled'); // to turn it on
     $('#buildBtn').on('click', async () => {
       // save all files to web file system      
       await prom.cleanDirectoryPromise.bind(WFS.root)();
