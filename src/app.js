@@ -18,27 +18,45 @@ import * as prom from './promises'
 
 // document ready
 $(async () => {
-    $('#hc-version').text(hetaPackage.version);
-    $('#hc-github').attr('href', 'https://github.com/hetalang/heta-online/'); // hetaPackage.repository.url
-    //$('#hc-homepage').attr('href', 'https://hetalang.github.io/#/'); // hetaPackage.homepage
-    $('#hc-info').on('click', () => $('#modalDiv').show());
-
     // heta modules collection
     let hmc = window.hmc = new PagesCollection('#leftPanel', '#newButton');
-
-    new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
-      .addTo(hmc,true); // default page
-    new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
-      .addTo(hmc, false);
 
     // heta exports collection
     let hee = window.hee = new PagesCollection('#rightPanel');
 
-    new ConsolePage('CONSOLE')
-      .addTo(hee, true)
-      .appendText('$ ');
+    function createDefaultPages() {
+      new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
+        .addTo(hmc,true); // default page
+      new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
+        .addTo(hmc, false);
+
+      new ConsolePage('CONSOLE')
+        .addTo(hee, true)
+        .appendText('$ ');
+    }
+    createDefaultPages();
 
     updateWindowHeight();
+
+    // set button events
+    $('#hc-version').text(hetaPackage.version);
+    $('#hc-github').attr('href', 'https://github.com/hetalang/heta-online/'); // hetaPackage.repository.url
+    //$('#hc-homepage').attr('href', 'https://hetalang.github.io/#/'); // hetaPackage.homepage
+    $('#hc-info').on('click', () => $('#modalDiv').show());
+    $('#hc-clean').on('click', () => {
+      let isOk = window.confirm('You are about to reset the platform to the initial state and delete all progress. Are you sure?');
+      if (isOk) {
+        // delete pages
+        for (let page of hmc.hetaPagesStorage.values()) {
+          page.delete();
+          }
+        for (let page of hee.hetaPagesStorage.values()) {
+          page.delete();
+        }
+        // set default values
+        createDefaultPages();
+      }
+    });
 
     // check browser support
     if (!window.webkitRequestFileSystem && !window.requestFileSystem) {
