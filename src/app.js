@@ -14,24 +14,23 @@ import DnDFileController from './drug-and-drop';
 $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
-import * as prom from './promises'
 
 // document ready
 $(async () => {
     // heta modules collection
-    let hmc = window.hmc = new PagesCollection('#leftPanel', '#newButton');
+    let leftCollection = window.leftCollection = new PagesCollection('#leftPanel', '#newButton');
 
     // heta exports collection
-    let hee = window.hee = new PagesCollection('#rightPanel');
+    let rightCollection = window.rightCollection = new PagesCollection('#rightPanel');
 
     function createDefaultPages() {
       new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
-        .addTo(hmc,true); // default page
+        .addTo(leftCollection,true); // default page
       new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
-        .addTo(hmc, false);
+        .addTo(leftCollection, false);
 
       new ConsolePage('CONSOLE')
-        .addTo(hee, true)
+        .addTo(rightCollection, true)
         .appendText('$ ');
     }
     createDefaultPages();
@@ -47,10 +46,10 @@ $(async () => {
       let isOk = window.confirm('You are about to reset the platform to the initial state and delete all progress. Are you sure?');
       if (isOk) {
         // delete pages
-        for (let page of hmc.hetaPagesStorage.values()) {
+        for (let page of leftCollection.hetaPagesStorage.values()) {
           page.delete();
-          }
-        for (let page of hee.hetaPagesStorage.values()) {
+        }
+        for (let page of rightCollection.hetaPagesStorage.values()) {
           page.delete();
         }
         // set default values
@@ -58,19 +57,9 @@ $(async () => {
       }
     });
 
-    // check browser support
-    if (!window.webkitRequestFileSystem && !window.requestFileSystem) {
-      $('#errMessage').text('Unsupported browser. This will be fixed in future releases.');
-      $('#modalDiv').show();
-      return; // BRAKE
-    }
-
-    // create file system
-    let WFS = await prom.requestFileSystemPromise('TEMPORARY', 10*1024*1024);
-
     // Drag and Drop
     new DnDFileController('body', async (file) => {
-      await hmc.addPageFromFile(file, file.name, true);
+      await leftCollection.addPageFromFile(file, file.name, true);
     });
     
     // create Worker
@@ -78,7 +67,7 @@ $(async () => {
     builderWorker.onmessage = async function({data}) {
       // update editor {action: 'editor', value: 'Some message', append: true}
       if (data.action === 'editor') { 
-        let he = hee.hetaPagesStorage.get(data.editor);
+        let he = rightCollection.hetaPagesStorage.get(data.editor);
         if (data.append) {
           let currentValue = he.monacoEditor.getValue();
           he.monacoEditor.setValue(currentValue + data.value);
@@ -91,36 +80,18 @@ $(async () => {
 
       // update console {action: 'console', value: 'Some message'}
       if (data.action === 'console') { 
-        hee.hetaPagesStorage.get('CONSOLE').appendText(data.value);
+        rightCollection.hetaPagesStorage.get('CONSOLE').appendText(data.value);
 
         return; // BRAKE
       }
 
-      // display /output.logs
+      // show files {action: 'finished/stop', dict: {...}}
       if (data.action === 'finished' || data.action === 'stop') {
-        try {
-          let logsEntry = await prom.getFilePromise.bind(WFS.root)(data.logPath, {create: false});
-          let file = await prom.filePromise.bind(logsEntry)();
-          let text = await file.text();
+        Object.getOwnPropertyNames(data.dict).forEach((name) => {
+          rightCollection.addPageFromFile(data.dict[name], name, false);
+        });
 
-          new EditorPage(logsEntry.fullPath, {language: 'plaintext', value: text, readOnly: true})
-            .addTo(hee);
-        } catch(e) {
-          if (!(e instanceof DOMException))
-          throw e;
-        }
-      }
-
-      // show files {action: 'finished', dist: 'dist'}
-      if (data.action === 'finished') {
-        let distEntry = await prom.getDirectoryPromise.bind(WFS.root)(data.dist, {create: false});
-        let entries = await getFileEntriesDeep(distEntry);
-        displayDistFiles(entries, hee);
         return; // BRAKE
-      }
-
-      if (data.action === 'stop') {
-        return;
       }
       
       throw new Error(`Unknown action in worker messages: ${data.action}`);
@@ -129,50 +100,23 @@ $(async () => {
     // build button
     $('#buildBtn').removeClass('w3-disabled'); // to turn it on
     $('#buildBtn').on('click', async () => {
-      // save all files to web file system      
-      await prom.cleanDirectoryPromise.bind(WFS.root)();
-      for (let he of hmc.hetaPagesStorage.values()) {
-        let data = he.getContent();
-        let entry = await prom.getFilePromise.bind(WFS.root)(he.id, {create: true});
-        let writer = await prom.createWriterPromise.bind(entry)();
-        writer.write(data);
-      }
-
       // clean old exports
-      for (let page of hee.hetaPagesStorage.values()) {
-        page.id!==hee.defaultPageName && page.delete();
-      }
+      [...rightCollection.hetaPagesStorage].forEach((x) => {
+        x[0]!==rightCollection.defaultPageName && x[1].delete();
+      })
+
+      // save all as object {filepath1: file1, filepath2: file2, ...}
+      let fileDict = {};
+      [...leftCollection.hetaPagesStorage].forEach((x) => {
+        fileDict['/' + x[0]] = x[1].getContent();
+      });
 
       // run builder
       builderWorker.postMessage({
-        url: WFS.root.toURL()
+        files: fileDict
       });
     });
 });
-
-async function getFileEntriesDeep(directoryEntry) {
-  let _entries = await prom.readEntriesPromise(directoryEntry.createReader());
-  let fileEntries = _entries.reduce(async (accumulator, currentValue) => {
-    if (currentValue.isFile) {
-      var deepFileEntries = [currentValue];
-    } else {
-      deepFileEntries = await getFileEntriesDeep(currentValue);
-    }
-    return (await accumulator).concat(deepFileEntries)
-    
-  }, Promise.resolve([]));
-
-  return fileEntries;
-} 
-
-async function displayDistFiles(entries, hee) {
-  for (let entry of entries) {
-    let file = await prom.filePromise.bind(entry)();
-    hee.addPageFromFile(file, entry.fullPath, false);
-  }
-
-  //console.log(entries); // XXX: TESTING
-}
 
 function updateWindowHeight(){
     let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();
@@ -185,10 +129,10 @@ function updateWindowHeight(){
     $('#rightPanel .codeContainer').height(h3 + 'px');
 
     // update editors
-    window.hmc
+    window.leftCollection
       .hetaPagesStorage
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
-    window.hee
+    window.rightCollection
       .hetaPagesStorage
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
 }

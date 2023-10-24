@@ -6,11 +6,6 @@ import Ajv from 'ajv';
 import hetaCompilerPackage from 'heta-compiler/package.json';
 import semver from 'semver';
 
-self.requestFileSystemSync = self.webkitRequestFileSystemSync ||
-    self.requestFileSystemSync;
-self.resolveLocalFileSystemSyncURL = self.webkitResolveLocalFileSystemSyncURL ||
-    self.resolveLocalFileSystemSyncURL;
-
 const reader = new FileReaderSync();
 
 let ajv = new Ajv({allErrors: true, useDefaults: true});
@@ -30,12 +25,13 @@ let contactMessage = `
 `;
 
 self.onmessage = (evt) => {
+    let inputDict = evt.data.files;
     // first lines in console
     postMessage({action: 'console', value: 'heta build', append: true});
     postMessage({action: 'console', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
 
     // create declaration
-    let declarationFile = self.resolveLocalFileSystemSyncURL(evt.data.url + '/platform.json').file();
+    let declarationFile = inputDict['/platform.json'];
     let declarationText = reader.readAsText(declarationFile);
     try {
         var declaration = JSON.parse(declarationText);
@@ -71,7 +67,7 @@ self.onmessage = (evt) => {
 
     // === this part displays "send errors to developer" message ===
     try {
-        var container = build(evt.data.url, declaration);
+        var container = build(inputDict, declaration);
     } catch(error) {
         postMessage({action: 'console', value: contactMessage + '\n', append: true});
         postMessage({action: 'console', value: error.stack, append: true});
@@ -89,7 +85,7 @@ self.onmessage = (evt) => {
     postMessage({action: 'console', value: '\n\n$ ', append: true});
 };
 
-function build(url, settings) { // modules, exports
+function build(inputDict, settings) { // modules, exports
     let coreDirname = '/';
     /*
         constructor()
@@ -120,31 +116,31 @@ function build(url, settings) { // modules, exports
     /*
         run()
     */
+    let outputDict = {};
     c.logger.info(`Compilation of module "${settings.importModule.source}" of type "${settings.importModule.type}"...`);
 
     // 1. Parsing
     let ms = new ModuleSystem(c.logger, (filename) => {
-        try {
-            let file = self.resolveLocalFileSystemSyncURL(url + filename).file();
-            var arrayBuffer = reader.readAsArrayBuffer(file);
-        } catch (e) {
+        let file = inputDict[filename];
+        if (!file) {
             throw new Error(`File ${filename} is not found.`);
         }
+        let arrayBuffer = reader.readAsArrayBuffer(file);
         
         return Buffer.from(arrayBuffer);
     });
-    let absFilename = path.join(_coreDirname, settings.importModule.source);
+    let sourceFilepath = path.resolve(_coreDirname, settings.importModule.source);
     let sourceType = settings.importModule.type;
-    ms.addModuleDeep(absFilename, sourceType, settings.importModule);
+    ms.addModuleDeep(sourceFilepath, sourceType, settings.importModule);
 
     // 2. Modules integration
     if (settings.options.debug) {
-        Object.values(ms.moduleCollection).forEach((value) => {
-          let relPath = path.relative(_coreDirname, value.filename + '.json');
-          let absPath = path.join(_metaDirname, relPath);
-          let str = JSON.stringify(value.parsed, null, 2);
-          fs.outputFileSync(absPath, str);
-          c.logger.info(`Meta file was saved to ${absPath}`);
+        Object.getOwnPropertyNames(ms.moduleCollection).forEach((name) => {
+            let relPath = path.relative(_coreDirname, name + '.json');
+            let absPath = path.join(_metaDirname, relPath);
+            let str = JSON.stringify(ms.moduleCollection[name], null, 2);
+            outputDict[absPath] = new File([str], name + '.json'); // add meta as file
+            c.logger.info(`Meta file was saved to ${absPath}`);
         });
     }
     let qArr = ms.integrate();
@@ -180,9 +176,6 @@ function build(url, settings) { // modules, exports
         c.checkTerms();
 
         // 9. Exports
-        // create dist dir
-        var distDirectoryEntry = self.resolveLocalFileSystemSyncURL(url)
-            .getDirectory(_distDirname, {create: true});
         // save
         if (settings.options.skipExport) {
             c.logger.warn('Exporting skipped as stated in declaration.');
@@ -196,13 +189,13 @@ function build(url, settings) { // modules, exports
                 filepath: '_julia'
             });
 
-            _makeAndSave(exportItem, distDirectoryEntry);
+            _makeAndSave(exportItem, _distDirname, outputDict);
         } else {
             //this.exportMany();
             let exportElements = [...c.exportStorage].map((x) => x[1]);
             c.logger.info(`Start exporting to files, total: ${exportElements.length}.`);
 
-            exportElements.forEach((exportItem) => _makeAndSave(exportItem, distDirectoryEntry));
+            exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname, outputDict));
         }
       } else {
         c.logger.warn('Units checking and export were skipped because of errors in compilation.');
@@ -224,56 +217,34 @@ function build(url, settings) { // modules, exports
       }
 
       //fs.outputFileSync(_logPath, logs);
-      self.resolveLocalFileSystemSyncURL(url)
-        .getFile(_logPath, {create: true})
-        .createWriter()
-        .write(new Blob([logs], { type: "text/plain" }));
+      outputDict[_logPath] = new File([logs], _logPath, { type: "text/plain" });
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 
     if (!c.logger.hasErrors) {
-        postMessage({action: 'finished', dist: _distDirname, logPath: _logPath});
+        postMessage({action: 'finished', dict: outputDict});
     } else {
-        postMessage({action: 'stop', logPath: _logPath});
+        postMessage({action: 'stop', dict: outputDict});
     }
-
-    // XXX: TEMP for testing
-    //let entries = distDirectoryEntry?.createReader().readEntries();
-    //console.log(entries);
     
     return c;
 }
 
-function _makeAndSave(exportItem, distDirectoryEntry) {
+function _makeAndSave(exportItem, distDirectory, outputDict) {
     let logger = exportItem._container.logger;
-    let absPath = path.resolve(distDirectoryEntry.fullPath, exportItem.filepath); // /dist/matlab
-    let msg = `Exporting to "${absPath}" of format "${exportItem.format}"...`;
+    let filepath0 = path.resolve(distDirectory, exportItem.filepath); // /dist/matlab
+    let msg = `Exporting to "${filepath0}" of format "${exportItem.format}"...`;
     logger.info(msg);
 
     let mmm = exportItem.make();
 
     mmm.forEach((out) => {
+        let filepath = filepath0 + out.pathSuffix; // /dist/matlab/run.jl
         try {
-            var fileName = exportItem.filepath + out.pathSuffix;
-            _writeFileDeep(distDirectoryEntry, fileName, new Blob([out.content]));
+            outputDict[filepath] = new File([out.content], filepath);
         } catch (e) {
-            let msg =`Heta compiler cannot export to file: "${fileName}": \n\t- ${e.message}`;
+            let msg =`Heta compiler cannot export to file: "${filepath}": \n\t- ${e.message}`;
             logger.error(msg, {type: 'ExportError'});
         }
     });
-}
-
-function _writeFileDeep(directoryEntry, relPath, blob) {
-    let relPathArray = relPath.split('/');
-    let filename = relPathArray.pop();
-
-    // create directory deep
-    let currentEntry = directoryEntry;
-    for (let x of relPathArray) {
-        currentEntry = currentEntry.getDirectory(x, {create: true, exclusive: false})
-    }
-
-    currentEntry.getFile(filename, {create: true, exclusive: true})
-        .createWriter()
-        .write(blob);
 }

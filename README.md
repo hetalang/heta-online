@@ -10,7 +10,7 @@ Heta online is based on [heta-compiler](https://github.com/hetalang/heta-compile
 
 The application can be tested on the page: <https://heta-online.insysbio.com>.
 
-To read the full documentation, visit the Heta project homepage: <https://hetalang.github.io/#>.
+To read the full documentation on Heta language, visit the Heta project homepage: <https://hetalang.github.io/#>.
 
 ## building
 

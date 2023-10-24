@@ -36,6 +36,7 @@ const FORMATS = { // + Exports/Modules
     r: {extension: 'r', language: 'r'}, // R
     c: {extension: 'c', language: 'c'}, // C
     html: {extension: 'html', language: 'html'}, // HTML
+    log: {extension: 'log', language: 'plaintext'}, 
 };
 
 // class storing HetaEditors
@@ -60,7 +61,7 @@ export class PagesCollection {
     }
 
     // add page based on file
-    async addPageFromFile(file, filepath=file.name, usePrompt=true) { // approximately the same as displayDistFiles()
+    async addPageFromFile(file, filepath=file.name, usePrompt=true) {
       let ext = file.name.split('.').pop();
     
       let subFormatName = Object.getOwnPropertyNames(FORMATS)
@@ -204,9 +205,10 @@ export class EditorPage extends Page {
       return this;
     }
     getContent() {
-      let data = new Blob([this.monacoEditor.getValue()], { type: "text/plain" });
+      let text = this.monacoEditor.getValue();
+      let file = new File([text], this.id, {type: 'text/plain;charset=UTF-8'});
 
-      return data;
+      return file;
     }
 }
 
