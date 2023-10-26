@@ -27,8 +27,8 @@ let contactMessage = `
 self.onmessage = (evt) => {
     let inputDict = evt.data.files;
     // first lines in console
-    postMessage({action: 'console', value: 'heta build', append: true});
-    postMessage({action: 'console', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
+    postMessage({action: 'console', value: 'heta build'});
+    postMessage({action: 'console', value: '\nRunning compilation with declaration file "/platform.json"...'});
 
     // create declaration
     let declarationBuffer = inputDict['/platform.json'];
@@ -38,32 +38,32 @@ self.onmessage = (evt) => {
     try {
         var declaration = JSON.parse(declarationText);
     } catch (e) {
-        postMessage({action: 'console', value: `\nDeclaration file must be JSON formatted:`, append: true});
-        postMessage({action: 'console', value: `\n\t- ${e.message}`, append: true});
+        postMessage({action: 'console', value: `\nDeclaration file must be JSON formatted:`});
+        postMessage({action: 'console', value: `\n\t- ${e.message}`});
         
-        postMessage({action: 'console', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ '});
         return;
     }
 
     // validate and set defaults
     let valid = validate(declaration);
     if (!valid) { // analyze errors
-        postMessage({action: 'console', value: '\nErrors in declaration file:', append: true});
+        postMessage({action: 'console', value: '\nErrors in declaration file:'});
         validate.errors.forEach((ajvError) => {
             let msg = `\n\t- "${ajvError.instancePath}" ${ajvError.message}`;
-            postMessage({action: 'console', value: msg, append: true});
+            postMessage({action: 'console', value: msg});
         });
 
-        postMessage({action: 'console', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ '});
         return;
     }
 
     // === wrong version throws, if no version stated than skip ===
     let satisfiesVersion = semver.satisfies(hetaCompilerPackage.version, declaration.builderVersion);
     if (!satisfiesVersion) {
-        postMessage({action: 'console', value: `\nVersion requirements (${declaration.builderVersion}) don't meet builder version ${hetaCompilerPackage.version}.`, append: true});
+        postMessage({action: 'console', value: `\nVersion requirements (${declaration.builderVersion}) don't meet builder version ${hetaCompilerPackage.version}.`});
         
-        postMessage({action: 'console', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ '});
         return;
     }
 
@@ -71,20 +71,20 @@ self.onmessage = (evt) => {
     try {
         var container = build(inputDict, declaration);
     } catch(error) {
-        postMessage({action: 'console', value: contactMessage + '\n', append: true});
-        postMessage({action: 'console', value: error.stack, append: true});
+        postMessage({action: 'console', value: contactMessage + '\n'});
+        postMessage({action: 'console', value: error.stack});
 
-        postMessage({action: 'console', value: '\n\n$ ', append: true});
+        postMessage({action: 'console', value: '\n\n$ '});
         return;
     }
 
     if (container.hetaErrors().length > 0) {
-        postMessage({action: 'console', value: '\nCompilation ERROR! See logs.', append: true});
+        postMessage({action: 'console', value: '\nCompilation ERROR! See logs.'});
     } else {
-        postMessage({action: 'console', value: '\nCompilation OK!', append: true});
+        postMessage({action: 'console', value: '\nCompilation OK!'});
     }
 
-    postMessage({action: 'console', value: '\n\n$ ', append: true});
+    postMessage({action: 'console', value: '\n\n$ '});
 };
 
 function build(inputDict, settings) { // modules, exports
@@ -103,7 +103,7 @@ function build(inputDict, settings) { // modules, exports
     c.logger.addTransport((level, msg, opt, levelNum) => {
         let value = `\n[${level}]\t${msg}`;
 
-        postMessage({action: 'console', value: value, append: true});
+        postMessage({action: 'console', value: value});
     });
 
     // file paths
