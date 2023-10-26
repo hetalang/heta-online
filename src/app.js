@@ -60,13 +60,13 @@ $(async () => {
 
     // Drag and Drop
     new DnDFileController('body', async (file) => {
-      await leftCollection.addPageFromFile(file, file.name, true);
+      await leftCollection.addPageFromFile(file);
     });
     
     // create Worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
     builderWorker.onmessage = async function({data}) {
-      // update editor {action: 'editor', value: 'Some message', append: true}
+      // update editor {action: 'editor', value: 'Some message', append: true} NOT USED
       if (data.action === 'editor') { 
         let he = rightCollection.hetaPagesStorage.get(data.editor);
         if (data.append) {
@@ -89,9 +89,7 @@ $(async () => {
       // show files {action: 'finished/stop', dict: {...}}
       if (data.action === 'finished' || data.action === 'stop') {
         Object.getOwnPropertyNames(data.dict).forEach((name) => {
-          let filename = path.parse(name).base;
-          let file = new File([data.dict[name]], filename); // 
-          rightCollection.addPageFromFile(file, name, false);
+          rightCollection.addPageFromBuffer(data.dict[name], name);
         });
 
         return; // BRAKE

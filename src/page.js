@@ -11,32 +11,33 @@ import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 import './heta-colors';
 import './console-colors';
 import './editor-menu';
+import * as path from 'path';
 
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 const FORMATS = { // + Exports/Modules
-    json: {extension: 'json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE}, // JSON / json
-    heta: {extension: 'heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
-    csv: {extension: 'csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE}, // Table / table
-    yaml: {extension: 'yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
-    sbml: {extension: 'xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    indexHeta: {extension: 'heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta'}, // HetaCode / heta
-    qspUnitsHeta: {extension: 'heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta'}, // HetaCode / heta
-    xlsx: {extension: 'xlsx', pageType: 'info'},
+    json: {extension: '.json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE}, // JSON / json
+    heta: {extension: '.heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
+    csv: {extension: '.csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE}, // Table / table
+    yaml: {extension: '.yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
+    sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
+    indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta'}, // HetaCode / heta
+    qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta'}, // HetaCode / heta
+    xlsx: {extension: '.xlsx', pageType: 'info'},
 
-    slv: {extension: 'slv', pageType: 'info'},
-    txt: {extension: 'txt', language: 'plaintext'},
-    markdown: {extension: 'md', language: 'markdown'}, // Markdown
-    mrgsolve: {extension: 'c', language: 'c'}, // Mrgsolve
-    julia: {extension: 'jl', language: 'julia'}, // Julia
-    matlab: {extension: 'm', language: 'plaintext'}, // Matlab
-    simbio: {extension: 'm', language: 'plaintext'}, // Simbio
-    dbsolve: {extension: 'slv', language: 'plaintext'}, // DBSolve
-    cpp: {extension: 'cpp', language: 'cpp'}, // C++
-    r: {extension: 'r', language: 'r'}, // R
-    c: {extension: 'c', language: 'c'}, // C
-    html: {extension: 'html', language: 'html'}, // HTML
-    log: {extension: 'log', language: 'plaintext'}, 
+    slv: {extension: '.slv', pageType: 'info'},
+    txt: {extension: '.txt', language: 'plaintext'},
+    markdown: {extension: '.md', language: 'markdown'}, // Markdown
+    mrgsolve: {extension: '.c', language: 'c'}, // Mrgsolve
+    julia: {extension: '.jl', language: 'julia'}, // Julia
+    matlab: {extension: '.m', language: 'plaintext'}, // Matlab
+    simbio: {extension: '.m', language: 'plaintext'}, // Simbio
+    dbsolve: {extension: '.slv', language: 'plaintext'}, // DBSolve
+    cpp: {extension: '.cpp', language: 'cpp'}, // C++
+    r: {extension: '.r', language: 'r'}, // R
+    c: {extension: '.c', language: 'c'}, // C
+    html: {extension: '.html', language: 'html'}, // HTML
+    log: {extension: '.log', language: 'plaintext'}, 
 };
 
 // class storing HetaEditors
@@ -48,62 +49,75 @@ export class PagesCollection {
         // set events
         this.count = 0;
         newButton && $(newButton).on('change', (evt) => {
-          if (evt.target.value==='loadFile') { // from file
+          let value = evt.target.value;
+          evt.target.value = '';
+          if (value==='loadFile') { // from file
             $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=false/>')
               .on('change', (evt) => this.addPageFromFile($(evt.target)[0].files[0]))
               .click();
           } else { // from template
-            let format = FORMATS[evt.target.value];
-            this.addPage(format);
+            let format = FORMATS[value];
+            let filepath = this.checkPageName(format);
+            if (!filepath) return; // BRAKE
+            new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
+              .addTo(this);
           }
-          evt.target.value = '';
         });
     }
 
     // add page based on file
-    async addPageFromFile(file, filepath=file.name, usePrompt=true) {
-      let ext = file.name.split('.').pop();
+    async addPageFromFile(file) {
+      let ext = path.extname(file.name);
     
-      let subFormatName = Object.getOwnPropertyNames(FORMATS)
+      let formatName = Object.getOwnPropertyNames(FORMATS)
         .find((x) => FORMATS[x].extension === ext);
-      if (!subFormatName) {
+      if (!formatName) {
         window.alert(`Unsupported file extension: ${ext}`);
         return; // BRAKE
       }
       
-      let format = FORMATS[subFormatName];
-      let page = this.addPage({
-        extension: format.extension,
-        pageType: format.pageType,
-        language: format.language,
-        defaultName: filepath,
-      }, usePrompt);
-      await page.setContent(file);
+      let format = FORMATS[formatName];
+      let filepath = this.checkPageName({extension: ext, defaultName: file.name});
+      if (!filepath) return; // BRAKE
+      if (format.pageType==='info') {
+        var page = new InfoPage(filepath, true, false)
+            .addTo(this);
+      } else {
+        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
+          .addTo(this);
+      }
+      await page.fromFile(file);
 
       return page;
     }
+    async addPageFromBuffer(buffer, filepath) {
+      let ext = path.extname(filepath);
 
+      let formatName = Object.getOwnPropertyNames(FORMATS)
+        .find((x) => FORMATS[x].extension === ext);
+      if (!formatName) {
+        window.alert(`Unsupported file extension: ${ext}`);
+        return; // BRAKE
+      }
+      let format = FORMATS[formatName];
+      if (format.pageType==='info') {
+        var page = new InfoPage(filepath, true, false)
+            .addTo(this);
+      } else {
+        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
+          .addTo(this);
+      }
+
+      page.fromBuffer(buffer);
+
+      return page;
+    }
     get defaultPage() {
         return this.hetaPagesStorage.get(this.defaultPageName);
     }
-
-    // add page based on options
-    addPage(format, usePrompt=true) {
-        let fileName = usePrompt ? this.checkPageName(format) : format.defaultName
-        
-        if (!!fileName && format.pageType==='info') {
-          var page = new InfoPage(fileName, true, false)
-            .addTo(this);
-        } else if (!!fileName) {        
-          page = new EditorPage(fileName, {value: format.defaultValue, language: format.language}, true, false)
-            .addTo(this);
-        }
-
-        return page;
-    }
     checkPageName(format) {
       // prompt for module name
-      let fileName = format.defaultName || `module${this.count++}.${format.extension}`;
+      let fileName = format.defaultName || `module${this.count++}${format.extension}`;
       let title = 'File name';
       do {
           fileName = window.prompt(title, fileName);
@@ -174,9 +188,6 @@ export class Page {
 
     return this;
   }
-  getBuffer() {
-    throw new Error('getBuffer method is not implemented for Page class.');
-  }
 }
 
 export class EditorPage extends Page {
@@ -201,7 +212,13 @@ export class EditorPage extends Page {
 
       return this;
     }
-    async setContent(file) {
+    fromBuffer(buffer) {
+      let text = new TextDecoder('utf-8').decode(buffer);
+      this.monacoEditor.setValue(text);
+
+      return this;
+    }
+    async fromFile(file) {
       let text = await file.text();
       this.monacoEditor.setValue(text);
 
@@ -235,7 +252,14 @@ export class InfoPage extends Page {
   constructor(id, deleteBtn=true, rightSide=false) {
       super(id, deleteBtn, rightSide);
   }
-  async setContent(file) {
+  fromBuffer(buffer) {
+    // create file
+    let file = new File([buffer], this.id); // , {type: 'text/plain;charset=UTF-8'}
+    this.fromFile(file);
+
+    return this;
+  }
+  fromFile(file) {
     this._sourceFile = file;
 
     let url = window.URL.createObjectURL(file);
