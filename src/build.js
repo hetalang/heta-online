@@ -31,8 +31,10 @@ self.onmessage = (evt) => {
     postMessage({action: 'console', value: '\nRunning compilation with declaration file "/platform.json"...', append: true});
 
     // create declaration
-    let declarationFile = inputDict['/platform.json'];
-    let declarationText = reader.readAsText(declarationFile);
+    let declarationBuffer = inputDict['/platform.json'];
+    
+    //let declarationText = declarationBuffer.toString('utf-8'); // XXX: I don't understand why it doesn't works.
+    let declarationText = new TextDecoder('utf-8').decode(declarationBuffer);
     try {
         var declaration = JSON.parse(declarationText);
     } catch (e) {
@@ -116,16 +118,15 @@ function build(inputDict, settings) { // modules, exports
     /*
         run()
     */
-    let outputDict = {};
+    let outputDict = {}; // {<filepath>: <Buffer>}
     c.logger.info(`Compilation of module "${settings.importModule.source}" of type "${settings.importModule.type}"...`);
 
     // 1. Parsing
     let ms = new ModuleSystem(c.logger, (filename) => {
-        let file = inputDict[filename];
-        if (!file) {
-            throw new Error(`File ${filename} is not found.`);
+        let arrayBuffer = inputDict[filename];
+        if (!arrayBuffer) {
+            throw new Error(`Module ${filename} is not found.`);
         }
-        let arrayBuffer = reader.readAsArrayBuffer(file);
         
         return Buffer.from(arrayBuffer);
     });
@@ -139,7 +140,7 @@ function build(inputDict, settings) { // modules, exports
             let relPath = path.relative(_coreDirname, name + '.json');
             let absPath = path.join(_metaDirname, relPath);
             let str = JSON.stringify(ms.moduleCollection[name], null, 2);
-            outputDict[absPath] = new File([str], name + '.json'); // add meta as file
+            outputDict[absPath] = Buffer.from(str, 'utf-8');
             c.logger.info(`Meta file was saved to ${absPath}`);
         });
     }
@@ -217,7 +218,7 @@ function build(inputDict, settings) { // modules, exports
       }
 
       //fs.outputFileSync(_logPath, logs);
-      outputDict[_logPath] = new File([logs], _logPath, { type: "text/plain" });
+      outputDict[_logPath] = Buffer.from(logs, 'utf-8');
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 
@@ -241,7 +242,7 @@ function _makeAndSave(exportItem, distDirectory, outputDict) {
     mmm.forEach((out) => {
         let filepath = filepath0 + out.pathSuffix; // /dist/matlab/run.jl
         try {
-            outputDict[filepath] = new File([out.content], filepath);
+            outputDict[filepath] = out.content;
         } catch (e) {
             let msg =`Heta compiler cannot export to file: "${filepath}": \n\t- ${e.message}`;
             logger.error(msg, {type: 'ExportError'});

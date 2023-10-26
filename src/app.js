@@ -5,6 +5,7 @@ import 'w3-css/w3.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './dropping.css';
 
+import * as path from 'path';
 import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
 import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 
@@ -88,7 +89,9 @@ $(async () => {
       // show files {action: 'finished/stop', dict: {...}}
       if (data.action === 'finished' || data.action === 'stop') {
         Object.getOwnPropertyNames(data.dict).forEach((name) => {
-          rightCollection.addPageFromFile(data.dict[name], name, false);
+          let filename = path.parse(name).base;
+          let file = new File([data.dict[name]], filename); // 
+          rightCollection.addPageFromFile(file, name, false);
         });
 
         return; // BRAKE
@@ -101,15 +104,15 @@ $(async () => {
     $('#buildBtn').removeClass('w3-disabled'); // to turn it on
     $('#buildBtn').on('click', async () => {
       // clean old exports
-      [...rightCollection.hetaPagesStorage].forEach((x) => {
-        x[0]!==rightCollection.defaultPageName && x[1].delete();
-      })
+      for (let [filepath, page] of rightCollection.hetaPagesStorage) {
+        filepath!==rightCollection.defaultPageName && page.delete();
+      }
 
-      // save all as object {filepath1: file1, filepath2: file2, ...}
+      // save all as object {filepath1: buffer1, filepath2: buffer2, ...}
       let fileDict = {};
-      [...leftCollection.hetaPagesStorage].forEach((x) => {
-        fileDict['/' + x[0]] = x[1].getContent();
-      });
+      for (let [filepath, page] of leftCollection.hetaPagesStorage) {
+        fileDict['/' + filepath] = await page.getBuffer();
+      }
 
       // run builder
       builderWorker.postMessage({

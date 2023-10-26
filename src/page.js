@@ -174,6 +174,9 @@ export class Page {
 
     return this;
   }
+  getBuffer() {
+    throw new Error('getBuffer method is not implemented for Page class.');
+  }
 }
 
 export class EditorPage extends Page {
@@ -204,11 +207,17 @@ export class EditorPage extends Page {
 
       return this;
     }
-    getContent() {
+    getFile() {
       let text = this.monacoEditor.getValue();
       let file = new File([text], this.id, {type: 'text/plain;charset=UTF-8'});
 
       return file;
+    }
+    getBuffer() {
+      let text = this.monacoEditor.getValue();
+      let buffer = Buffer.from(text, 'utf-8');
+
+      return buffer;
     }
 }
 
@@ -227,12 +236,12 @@ export class InfoPage extends Page {
       super(id, deleteBtn, rightSide);
   }
   async setContent(file) {
-    this._file = file;
+    this._sourceFile = file;
 
     let url = window.URL.createObjectURL(file);
     let str = `<div class="w3-container">
-      <h3>Module info:</h3>
-      <p>source name: <i>${file.name}</i></p>
+      <h3>Source file info:</h3>
+      <p>name: <i>${file.name}</i></p>
       <p>type: <i>${file.type}</i></p>
       <p>lastModifiedDate: <i>${file.lastModifiedDate}</i></p>
       <p>size: <i>${Math.round(file.size/1024)} Kb</i></p>
@@ -243,7 +252,12 @@ export class InfoPage extends Page {
 
     return this;
   }
-  getContent() {
-    return this._file;
+  async getBuffer() {
+    let buffer = await this._sourceFile.arrayBuffer();
+
+    return buffer;
+  }
+  getFile() {
+    return this._sourceFile;
   }
 }
