@@ -1,7 +1,6 @@
 # TODO list
 
 - red contur for Drag and Drop
-- use Buffer instead of File
 - hot keys for InfoPage
 - drug and drop directory
 - Download project button

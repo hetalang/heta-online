@@ -64,7 +64,6 @@ export class PagesCollection {
           }
         });
     }
-
     // add page based on file
     async addPageFromFile(file) {
       let ext = path.extname(file.name);
