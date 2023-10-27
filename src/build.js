@@ -32,8 +32,6 @@ self.onmessage = (evt) => {
 
     // create declaration
     let declarationBuffer = inputDict['/platform.json'];
-    
-    //let declarationText = declarationBuffer.toString('utf-8'); // XXX: I don't understand why it doesn't works.
     let declarationText = new TextDecoder('utf-8').decode(declarationBuffer);
     try {
         var declaration = JSON.parse(declarationText);
@@ -123,12 +121,13 @@ function build(inputDict, settings) { // modules, exports
 
     // 1. Parsing
     let ms = new ModuleSystem(c.logger, (filename) => {
-        let arrayBuffer = inputDict[filename];
+        let arrayBuffer = inputDict[filename]; // Uint8Array
         if (!arrayBuffer) {
             throw new Error(`Module ${filename} is not found.`);
         }
+        let buffer = Buffer.from(arrayBuffer); // Buffer
         
-        return Buffer.from(arrayBuffer);
+        return buffer;
     });
     let sourceFilepath = path.resolve(_coreDirname, settings.importModule.source);
     let sourceType = settings.importModule.type;
@@ -218,7 +217,7 @@ function build(inputDict, settings) { // modules, exports
       }
 
       //fs.outputFileSync(_logPath, logs);
-      outputDict[_logPath] = Buffer.from(logs, 'utf-8');
+      outputDict[_logPath] = Buffer.from(logs, 'utf-8'); // Buffer
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 

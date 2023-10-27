@@ -89,7 +89,7 @@ export class PagesCollection {
 
       return page;
     }
-    async addPageFromBuffer(buffer, filepath, readOnly=true) {
+    async addPageFromArrayBuffer(ab, filepath, readOnly=true) {
       let ext = path.extname(filepath);
 
       let formatName = Object.getOwnPropertyNames(FORMATS)
@@ -107,7 +107,7 @@ export class PagesCollection {
           .addTo(this);
       }
 
-      page.fromBuffer(buffer);
+      page.fromArrayBuffer(ab);
 
       return page;
     }
@@ -187,6 +187,11 @@ export class Page {
 
     return this;
   }
+  async toUint8String() {
+    let ab = await this.getArrayBuffer();
+
+    return new Uint8Array(ab).toString();
+  }
 }
 
 export class EditorPage extends Page {
@@ -211,8 +216,8 @@ export class EditorPage extends Page {
 
       return this;
     }
-    fromBuffer(buffer) {
-      let text = new TextDecoder('utf-8').decode(buffer);
+    fromArrayBuffer(ab) {
+      let text = new TextDecoder('utf-8').decode(ab);
       this.monacoEditor.setValue(text);
 
       return this;
@@ -229,11 +234,10 @@ export class EditorPage extends Page {
 
       return file;
     }
-    getBuffer() {
+    getArrayBuffer() {
       let text = this.monacoEditor.getValue();
-      let buffer = Buffer.from(text, 'utf-8');
 
-      return buffer;
+      return new TextEncoder().encode(text).buffer;
     }
 }
 
@@ -251,9 +255,9 @@ export class InfoPage extends Page {
   constructor(id, deleteBtn=true, rightSide=false) {
       super(id, deleteBtn, rightSide);
   }
-  fromBuffer(buffer) {
+  fromArrayBuffer(ab) {
     // create file
-    let file = new File([buffer], this.id); // , {type: 'text/plain;charset=UTF-8'}
+    let file = new File([ab], this.id); // , {type: 'text/plain;charset=UTF-8'}
     this.fromFile(file);
 
     return this;
@@ -275,10 +279,8 @@ export class InfoPage extends Page {
 
     return this;
   }
-  async getBuffer() {
-    let buffer = await this._sourceFile.arrayBuffer();
-
-    return buffer;
+  async getArrayBuffer() {
+    return await this._sourceFile.arrayBuffer();
   }
   getFile() {
     return this._sourceFile;

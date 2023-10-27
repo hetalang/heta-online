@@ -5,7 +5,6 @@ import 'w3-css/w3.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './dropping.css';
 
-import * as path from 'path';
 import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
 import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 
@@ -16,17 +15,31 @@ $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
 
+// heta modules collection
+let leftCollection = window.leftCollection = new PagesCollection('#leftPanel', '#newButton');
+
+// heta exports collection
+let rightCollection = window.rightCollection = new PagesCollection('#rightPanel');
+
+$(window).on('beforeunload', async function(evt) {
+  await saveSession();
+});
+
+async function saveSession() {
+  for (let page of leftCollection.hetaPagesStorage.values()) {
+    window.localStorage.setItem(page.id, await page.toUint8String());
+  }
+  for (let page of rightCollection.hetaPagesStorage.values()) {
+    window.localStorage.setItem(page.id, await page.toUint8String());
+  }
+}
+
 // document ready
 $(async () => {
-    // heta modules collection
-    let leftCollection = window.leftCollection = new PagesCollection('#leftPanel', '#newButton');
-
-    // heta exports collection
-    let rightCollection = window.rightCollection = new PagesCollection('#rightPanel');
 
     function createDefaultPages() {
       new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
-        .addTo(leftCollection,true); // default page
+        .addTo(leftCollection, true); // default page
       new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
         .addTo(leftCollection, false);
 
@@ -89,7 +102,7 @@ $(async () => {
       // show files {action: 'finished/stop', dict: {...}}
       if (data.action === 'finished' || data.action === 'stop') {
         Object.getOwnPropertyNames(data.dict).forEach((name) => {
-          rightCollection.addPageFromBuffer(data.dict[name], name);
+          rightCollection.addPageFromArrayBuffer(data.dict[name], name); // Uint8Array
         });
 
         return; // BRAKE
@@ -109,7 +122,7 @@ $(async () => {
       // save all as object {filepath1: buffer1, filepath2: buffer2, ...}
       let fileDict = {};
       for (let [filepath, page] of leftCollection.hetaPagesStorage) {
-        fileDict['/' + filepath] = await page.getBuffer();
+        fileDict['/' + filepath] = await page.getArrayBuffer(); // Uint8Array
       }
 
       // run builder
