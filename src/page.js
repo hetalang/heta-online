@@ -23,8 +23,8 @@ const FORMATS = { // + Exports/Modules
     sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
     indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta'}, // HetaCode / heta
     qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta'}, // HetaCode / heta
-    xlsx: {extension: '.xlsx', pageType: 'info'},
 
+    xlsx: {extension: '.xlsx', pageType: 'info'},
     slv: {extension: '.slv', pageType: 'info'},
     txt: {extension: '.txt', language: 'plaintext'},
     markdown: {extension: '.md', language: 'markdown'}, // Markdown
@@ -89,7 +89,7 @@ export class PagesCollection {
 
       return page;
     }
-    async addPageFromBuffer(buffer, filepath) {
+    async addPageFromBuffer(buffer, filepath, readOnly=true) {
       let ext = path.extname(filepath);
 
       let formatName = Object.getOwnPropertyNames(FORMATS)
@@ -103,7 +103,7 @@ export class PagesCollection {
         var page = new InfoPage(filepath, true, false)
             .addTo(this);
       } else {
-        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
+        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language, readOnly: readOnly}, true, false)
           .addTo(this);
       }
 

@@ -11,10 +11,8 @@
 - nice css styles
 - support of smartphones
 - Matlab language support
-- replace font awesome 4 for something light,
+- replace font awesome 4 for something light
     https://github.com/danklammer/bytesize-icons
 - save session
 
 ## Errors
-
-- readOnly for output files
