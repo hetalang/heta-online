@@ -1,5 +1,7 @@
 # TODO list
 
+- set mime-types for files
+- Dot support
 - red contur for Drag and Drop
 - hot keys for InfoPage
 - drug and drop directory
@@ -13,6 +15,5 @@
 - Matlab language support
 - replace font awesome 4 for something light
     https://github.com/danklammer/bytesize-icons
-- save session
 
 ## Errors

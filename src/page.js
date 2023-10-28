@@ -89,7 +89,7 @@ export class PagesCollection {
 
       return page;
     }
-    async addPageFromArrayBuffer(ab, filepath, readOnly=true) {
+    async addPageFromArrayBuffer(ab, filepath, readOnly=true, deleteBtn=true, rightSide=false) {
       let ext = path.extname(filepath);
 
       let formatName = Object.getOwnPropertyNames(FORMATS)
@@ -100,10 +100,10 @@ export class PagesCollection {
       }
       let format = FORMATS[formatName];
       if (format.pageType==='info') {
-        var page = new InfoPage(filepath, true, false)
+        var page = new InfoPage(filepath, deleteBtn, rightSide)
             .addTo(this);
       } else {
-        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language, readOnly: readOnly}, true, false)
+        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language, readOnly: readOnly}, deleteBtn, rightSide)
           .addTo(this);
       }
 
@@ -136,6 +136,8 @@ export class Page {
   constructor(id, deleteBtn=true, rightSide=false) {
     this.id = id;
     this.name = id.split('/').pop();
+    this.rightSide = rightSide;
+    this.deleteBtn = deleteBtn;
     //this._parent = undefined;
 
     // create div element
@@ -167,6 +169,7 @@ export class Page {
     this.monacoEditor?.layout()
   }
   delete() {
+    window.localStorage.removeItem(this.id);
     $(this.navigationButton).remove();
     $(this.editorContainer).remove();
     this._parent.hetaPagesStorage.delete(this.id);

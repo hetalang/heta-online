@@ -22,32 +22,82 @@ let leftCollection = window.leftCollection = new PagesCollection('#leftPanel', '
 let rightCollection = window.rightCollection = new PagesCollection('#rightPanel');
 
 $(window).on('beforeunload', async function(evt) {
+  evt.preventDefault();
   await saveSession();
+  return null;
 });
 
 async function saveSession() {
+  let leftCollectionArray = [];
   for (let page of leftCollection.hetaPagesStorage.values()) {
-    window.localStorage.setItem(page.id, await page.toUint8String());
+    let uint8 = await page.toUint8String();
+    let options = page.monacoEditor?.getRawOptions();
+    leftCollectionArray.push({
+      filepath: page.id,
+      uint8: uint8,
+      readOnly: options?.readOnly,
+      rightSide: page.rightSide,
+      deleteBtn: page.deleteBtn
+    });
   }
+  window.localStorage.setItem('leftCollectionArray', JSON.stringify(leftCollectionArray));
+
+  let rightCollectionArray = [];
   for (let page of rightCollection.hetaPagesStorage.values()) {
-    window.localStorage.setItem(page.id, await page.toUint8String());
+    let uint8 = await page.toUint8String();
+    let options = page.monacoEditor?.getRawOptions();
+    rightCollectionArray.push({
+      filepath: page.id,
+      uint8: uint8,
+      readOnly: options?.readOnly,
+      rightSide: page.rightSide,
+      deleteBtn: page.deleteBtn
+    });
   }
+  window.localStorage.setItem('rightCollectionArray', JSON.stringify(rightCollectionArray));
+}
+window.saveSession = saveSession;
+
+function loadSession() {
+  let leftCollectionString = localStorage.getItem('leftCollectionArray');
+  let leftCollectionObject = JSON.parse(leftCollectionString);
+  leftCollectionObject.forEach((x) => {
+    let uint8 = new Uint8Array(x.uint8.split(','));
+    leftCollection.addPageFromArrayBuffer(uint8.buffer, x.filepath, x.readOnly, x.deleteBtn, x.rightSide);
+  });
+  leftCollection.defaultPageName = 'index.heta';
+  /*
+  let rightCollectionString = localStorage.getItem('rightCollectionArray');
+  let rightCollectionObject = JSON.parse(rightCollectionString);
+  rightCollectionObject.forEach((x) => {
+    let uint8 = new Uint8Array(x.uint8.split(','));
+    rightCollection.addPageFromArrayBuffer(uint8.buffer, x.filepath, x.readOnly, x.deleteBtn, x.rightSide);
+  });
+  */
+  rightCollection.defaultPageName = 'CONSOLE';
+  new ConsolePage('CONSOLE')
+    .addTo(rightCollection, true)
+    .appendText('$ ');
+}
+
+function loadDefaultPages() {
+  new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
+    .addTo(leftCollection, true); // default page
+  new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
+    .addTo(leftCollection, false);
+
+  new ConsolePage('CONSOLE')
+    .addTo(rightCollection, true)
+    .appendText('$ heta init -s\nCreating a template platform in directory: "/"...\nPlatform template is created in silent mode.\nDONE.\n\n$ ');
 }
 
 // document ready
 $(async () => {
-
-    function createDefaultPages() {
-      new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
-        .addTo(leftCollection, true); // default page
-      new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
-        .addTo(leftCollection, false);
-
-      new ConsolePage('CONSOLE')
-        .addTo(rightCollection, true)
-        .appendText('$ ');
+    if (localStorage.length===0) {
+      loadDefaultPages();
+    } else {
+      loadSession();
     }
-    createDefaultPages();
 
     updateWindowHeight();
 
@@ -66,8 +116,9 @@ $(async () => {
         for (let page of rightCollection.hetaPagesStorage.values()) {
           page.delete();
         }
+        localStorage.clear();
         // set default values
-        createDefaultPages();
+        loadDefaultPages();
       }
     });
 
@@ -102,7 +153,7 @@ $(async () => {
       // show files {action: 'finished/stop', dict: {...}}
       if (data.action === 'finished' || data.action === 'stop') {
         Object.getOwnPropertyNames(data.dict).forEach((name) => {
-          rightCollection.addPageFromArrayBuffer(data.dict[name], name); // Uint8Array
+          rightCollection.addPageFromArrayBuffer(data.dict[name], name); // ArrayBuffer
         });
 
         return; // BRAKE
@@ -122,7 +173,7 @@ $(async () => {
       // save all as object {filepath1: buffer1, filepath2: buffer2, ...}
       let fileDict = {};
       for (let [filepath, page] of leftCollection.hetaPagesStorage) {
-        fileDict['/' + filepath] = await page.getArrayBuffer(); // Uint8Array
+        fileDict['/' + filepath] = await page.getArrayBuffer(); // ArrayBuffer
       }
 
       // run builder
