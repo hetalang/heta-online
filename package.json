@@ -1,6 +1,6 @@
 {
   "name": "heta-online",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Web tool for converting Heta code to different languages.",
   "main": "src/index.js",
   "scripts": {
