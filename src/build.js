@@ -69,6 +69,7 @@ self.onmessage = (evt) => {
     try {
         var container = build(inputDict, declaration);
     } catch(error) {
+        //throw error;
         postMessage({action: 'console', value: contactMessage + '\n'});
         postMessage({action: 'console', value: error.stack});
 
