@@ -83,9 +83,7 @@ module.exports = () => {
         config.optimization = {
             minimize: true,
             minimizer: [
-                new TerserPlugin({
-                    terserOptions: {keep_classnames: true}
-                }),
+                new TerserPlugin(),
                 new CssMinimizerPlugin(),
             ],
             splitChunks: {
