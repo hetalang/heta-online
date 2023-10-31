@@ -16,28 +16,28 @@ import * as path from 'path';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 const FORMATS = { // + Exports/Modules
-    json: {extension: '.json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE}, // JSON / json
-    heta: {extension: '.heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE}, // HetaCode / heta
-    csv: {extension: '.csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE}, // Table / table
-    yaml: {extension: '.yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE}, // YAML / yaml
-    sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE}, // SBML / sbml
-    indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta'}, // HetaCode / heta
-    qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta'}, // HetaCode / heta
+    json: {extension: '.json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE, type: 'application/json'}, // JSON / json
+    heta: {extension: '.heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE}, type: 'text/plain', // HetaCode / heta
+    csv: {extension: '.csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE, type: 'text/csv'}, // Table / table
+    yaml: {extension: '.yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE, type: 'application/yaml'}, // YAML / yaml
+    sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE, type: 'application/sbml+xml'}, // SBML / sbml
+    indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta', type: 'text/plain'}, // HetaCode / heta
+    qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta', type: 'text/plain'}, // HetaCode / heta
 
-    xlsx: {extension: '.xlsx', pageType: 'info'},
-    slv: {extension: '.slv', pageType: 'info'},
-    txt: {extension: '.txt', language: 'plaintext'},
-    markdown: {extension: '.md', language: 'markdown'}, // Markdown
-    mrgsolve: {extension: '.c', language: 'c'}, // Mrgsolve
-    julia: {extension: '.jl', language: 'julia'}, // Julia
-    matlab: {extension: '.m', language: 'plaintext'}, // Matlab
-    simbio: {extension: '.m', language: 'plaintext'}, // Simbio
-    dbsolve: {extension: '.slv', language: 'plaintext'}, // DBSolve
-    cpp: {extension: '.cpp', language: 'cpp'}, // C++
-    r: {extension: '.r', language: 'r'}, // R
-    c: {extension: '.c', language: 'c'}, // C
-    html: {extension: '.html', language: 'html'}, // HTML
-    log: {extension: '.log', language: 'plaintext'}, 
+    xlsx: {extension: '.xlsx', pageType: 'info', type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},
+    slv: {extension: '.slv', pageType: 'info', type: 'application/octet-stream'},
+    txt: {extension: '.txt', language: 'plaintext', type: 'text/plain'},
+    markdown: {extension: '.md', language: 'markdown', type: 'text/markdown'}, // Markdown
+    mrgsolve: {extension: '.c', language: 'c', type: 'text/plain'}, // Mrgsolve
+    julia: {extension: '.jl', language: 'julia', type: 'text/plain'}, // Julia
+    matlab: {extension: '.m', language: 'plaintext', type: 'text/plain'}, // Matlab
+    simbio: {extension: '.m', language: 'plaintext', type: 'text/plain'}, // Simbio
+    dbsolve: {extension: '.slv', language: 'plaintext', type: 'application/octet-stream'}, // DBSolve
+    cpp: {extension: '.cpp', language: 'cpp', type: 'text/plain'}, // C++
+    r: {extension: '.r', language: 'r', type: 'text/plain'}, // R
+    c: {extension: '.c', language: 'c', type: 'text/plain'}, // C
+    html: {extension: '.html', language: 'html', type: 'text/html'}, // HTML
+    log: {extension: '.log', language: 'plaintext', type: 'text/plain'}, 
 };
 
 // class storing HetaEditors
@@ -100,10 +100,10 @@ export class PagesCollection {
       }
       let format = FORMATS[formatName];
       if (format.pageType==='info') {
-        var page = new InfoPage(filepath, deleteBtn, rightSide)
+        var page = new InfoPage(filepath, deleteBtn, rightSide, format.type)
             .addTo(this);
       } else {
-        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language, readOnly: readOnly}, deleteBtn, rightSide)
+        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language, readOnly: readOnly}, deleteBtn, rightSide, format.type)
           .addTo(this);
       }
 
@@ -133,11 +133,12 @@ export class PagesCollection {
 
 // class storing editor and visualization
 export class Page {
-  constructor(id, deleteBtn=true, rightSide=false) {
+  constructor(id, deleteBtn=true, rightSide=false, mimeType='application/octet-stream') {
     this.id = id;
     this.name = id.split('/').pop();
     this.rightSide = rightSide;
     this.deleteBtn = deleteBtn;
+    this.type = mimeType;
     //this._parent = undefined;
 
     // create div element
@@ -198,8 +199,8 @@ export class Page {
 }
 
 export class EditorPage extends Page {
-    constructor(id, monacoOptions={}, deleteBtn=true, rightSide=false) {
-        super(id, deleteBtn, rightSide);
+    constructor(id, monacoOptions={}, deleteBtn=true, rightSide=false, mimeType='application/octet-stream') {
+        super(id, deleteBtn, rightSide, mimeType);
         let _monacoOptions = Object.assign({}, {
           readOnly: false,
           minimap: {enabled: false},
@@ -227,13 +228,14 @@ export class EditorPage extends Page {
     }
     async fromFile(file) {
       let text = await file.text();
+      this.type = file.type;
       this.monacoEditor.setValue(text);
 
       return this;
     }
     getFile() {
       let text = this.monacoEditor.getValue();
-      let file = new File([text], this.id, {type: 'text/plain;charset=UTF-8'});
+      let file = new File([text], this.id, {type: this.type});
 
       return file;
     }
@@ -246,7 +248,7 @@ export class EditorPage extends Page {
 
 export class ConsolePage extends EditorPage {
   constructor(id) {
-    super(id, {language: 'console', readOnly: true}, false, true);
+    super(id, {language: 'console', readOnly: true}, false, true, 'text/plain');
   }
   appendText(text) {
     let currentValue = this.monacoEditor.getValue();
@@ -255,18 +257,19 @@ export class ConsolePage extends EditorPage {
 }
 
 export class InfoPage extends Page {
-  constructor(id, deleteBtn=true, rightSide=false) {
-      super(id, deleteBtn, rightSide);
+  constructor(id, deleteBtn=true, rightSide=false, mimeType='application/octet-stream') {
+      super(id, deleteBtn, rightSide, mimeType);
   }
   fromArrayBuffer(ab) {
     // create file
-    let file = new File([ab], this.id); // , {type: 'text/plain;charset=UTF-8'}
+    let file = new File([ab], this.id, {type: this.type});
     this.fromFile(file);
 
     return this;
   }
   fromFile(file) {
     this._sourceFile = file;
+    this.type = file.type;
 
     let url = window.URL.createObjectURL(file);
     let str = `<div class="w3-container">
