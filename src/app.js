@@ -16,10 +16,10 @@ $(window).on('resize', updateWindowHeight);
 import hetaPackage from 'heta-compiler/package';
 
 // heta modules collection
-let leftCollection = window.leftCollection = new PagesCollection('#leftPanel', '#newButton');
+let leftCollection = new PagesCollection('#leftPanel', '#newButton');
 
 // heta exports collection
-let rightCollection = window.rightCollection = new PagesCollection('#rightPanel');
+let rightCollection = new PagesCollection('#rightPanel');
 
 $(window).on('beforeunload', async function(evt) {
   evt.preventDefault();
@@ -29,7 +29,7 @@ $(window).on('beforeunload', async function(evt) {
 
 async function saveSession() {
   let leftCollectionArray = [];
-  for (let page of leftCollection.hetaPagesStorage.values()) {
+  for (let page of leftCollection.pagesStorage.values()) {
     let uint8 = await page.toUint8String();
     let options = page.monacoEditor?.getRawOptions();
     leftCollectionArray.push({
@@ -43,7 +43,7 @@ async function saveSession() {
   window.localStorage.setItem('leftCollectionArray', JSON.stringify(leftCollectionArray));
 
   let rightCollectionArray = [];
-  for (let page of rightCollection.hetaPagesStorage.values()) {
+  for (let page of rightCollection.pagesStorage.values()) {
     let uint8 = await page.toUint8String();
     let options = page.monacoEditor?.getRawOptions();
     rightCollectionArray.push({
@@ -56,7 +56,6 @@ async function saveSession() {
   }
   window.localStorage.setItem('rightCollectionArray', JSON.stringify(rightCollectionArray));
 }
-window.saveSession = saveSession;
 
 function loadSession() {
   let leftCollectionString = localStorage.getItem('leftCollectionArray');
@@ -65,7 +64,7 @@ function loadSession() {
     let uint8 = new Uint8Array(x.uint8.split(','));
     leftCollection.addPageFromArrayBuffer(uint8.buffer, x.filepath, x.readOnly, x.deleteBtn, x.rightSide);
   });
-  leftCollection.defaultPageName = 'index.heta';
+  leftCollection.defaultPageName = 'platform.json';
   /*
   let rightCollectionString = localStorage.getItem('rightCollectionArray');
   let rightCollectionObject = JSON.parse(rightCollectionString);
@@ -110,10 +109,10 @@ $(async () => {
       let isOk = window.confirm('You are about to reset the platform to the initial state and delete all progress. Are you sure?');
       if (isOk) {
         // delete pages
-        for (let page of leftCollection.hetaPagesStorage.values()) {
+        for (let page of leftCollection.pagesStorage.values()) {
           page.delete();
         }
-        for (let page of rightCollection.hetaPagesStorage.values()) {
+        for (let page of rightCollection.pagesStorage.values()) {
           page.delete();
         }
         localStorage.clear();
@@ -132,7 +131,7 @@ $(async () => {
     builderWorker.onmessage = async function({data}) {
       // update editor {action: 'editor', value: 'Some message', append: true} NOT USED
       if (data.action === 'editor') { 
-        let he = rightCollection.hetaPagesStorage.get(data.editor);
+        let he = rightCollection.pagesStorage.get(data.editor);
         if (data.append) {
           let currentValue = he.monacoEditor.getValue();
           he.monacoEditor.setValue(currentValue + data.value);
@@ -145,7 +144,7 @@ $(async () => {
 
       // update console {action: 'console', value: 'Some message'}
       if (data.action === 'console') { 
-        rightCollection.hetaPagesStorage.get('CONSOLE').appendText(data.value);
+        rightCollection.pagesStorage.get('CONSOLE').appendText(data.value);
 
         return; // BRAKE
       }
@@ -166,13 +165,13 @@ $(async () => {
     $('#buildBtn').removeClass('w3-disabled'); // to turn it on
     $('#buildBtn').on('click', async () => {
       // clean old exports
-      for (let [filepath, page] of rightCollection.hetaPagesStorage) {
+      for (let [filepath, page] of rightCollection.pagesStorage) {
         filepath!==rightCollection.defaultPageName && page.delete();
       }
 
       // save all as object {filepath1: buffer1, filepath2: buffer2, ...}
       let fileDict = {};
-      for (let [filepath, page] of leftCollection.hetaPagesStorage) {
+      for (let [filepath, page] of leftCollection.pagesStorage) {
         fileDict['/' + filepath] = await page.getArrayBuffer(); // ArrayBuffer
       }
 
@@ -194,10 +193,8 @@ function updateWindowHeight(){
     $('#rightPanel .codeContainer').height(h3 + 'px');
 
     // update editors
-    window.leftCollection
-      .hetaPagesStorage
+    leftCollection.pagesStorage
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
-    window.rightCollection
-      .hetaPagesStorage
+    rightCollection.pagesStorage
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
 }

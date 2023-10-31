@@ -2,7 +2,6 @@ import { Container, ModuleSystem, Transpot } from 'heta-compiler/src/webpack';
 import path from 'path';
 import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 import Ajv from 'ajv';
-//const ajvErrors = require('ajv-errors');
 import hetaCompilerPackage from 'heta-compiler/package.json';
 import semver from 'semver';
 

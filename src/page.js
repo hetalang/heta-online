@@ -44,7 +44,7 @@ const FORMATS = { // + Exports/Modules
 export class PagesCollection {
     constructor(panel, newButton) {
         this.panel = panel;
-        this.hetaPagesStorage = new Map();
+        this.pagesStorage = new Map();
         this.defaultPageName = undefined;
         // set events
         this.count = 0;
@@ -112,7 +112,7 @@ export class PagesCollection {
       return page;
     }
     get defaultPage() {
-        return this.hetaPagesStorage.get(this.defaultPageName);
+        return this.pagesStorage.get(this.defaultPageName);
     }
     checkPageName(format) {
       // prompt for module name
@@ -121,7 +121,7 @@ export class PagesCollection {
       do {
           fileName = window.prompt(title, fileName);
           title = `"${fileName}" already exist. Choose another name.`
-      } while (this.hetaPagesStorage.has(fileName))
+      } while (this.pagesStorage.has(fileName))
 
       return fileName;
     }
@@ -173,7 +173,7 @@ export class Page {
     window.localStorage.removeItem(this.id);
     $(this.navigationButton).remove();
     $(this.editorContainer).remove();
-    this._parent.hetaPagesStorage.delete(this.id);
+    this._parent.pagesStorage.delete(this.id);
     this._parent.defaultPage?.show();
   }
   addTo(pageCollection, setAsDefault=false) {
@@ -186,7 +186,7 @@ export class Page {
     $(pageCollection.panel).find('.codeNavigation').append($(this.navigationButton));
 
     // add to storage
-    pageCollection.hetaPagesStorage.set(this.id, this);
+    pageCollection.pagesStorage.set(this.id, this);
     this.show();
 
     return this;
