@@ -5,18 +5,35 @@ import 'w3-css/w3.css';
 import 'font-awesome/css/font-awesome.min.css';
 import './dropping.css';
 
-import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
-import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
-
+import * as path from 'path';
 import { PagesCollection, EditorPage, ConsolePage, InfoPage } from './page';
 import DnDFileController from './drug-and-drop';
+
+// templates
+import DEFAULT_HETA_TEMPLATE from './heta-templates/default.heta.template';
+import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
+import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
+import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
+import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
+import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
+import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
+import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
+const TEMPLATES = { // + Exports/Modules
+  json: {extension: '.json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE, type: 'application/json'}, // JSON / json
+  heta: {extension: '.heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE, type: 'text/plain'}, // HetaCode / heta
+  csv: {extension: '.csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE, type: 'text/csv'}, // Table / table
+  yaml: {extension: '.yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE, type: 'application/yaml'}, // YAML / yaml
+  sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE, type: 'application/sbml+xml'}, // SBML / sbml
+  indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta', type: 'text/plain'}, // HetaCode / heta
+  qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta', type: 'text/plain'}, // HetaCode / heta
+};
 
 $(window).on('resize', updateWindowHeight);
 
 import hetaPackage from 'heta-compiler/package';
 
 // heta modules collection
-let leftCollection = new PagesCollection('#leftPanel', '#newButton');
+let leftCollection = new PagesCollection('#leftPanel');
 
 // heta exports collection
 let rightCollection = new PagesCollection('#rightPanel');
@@ -125,6 +142,27 @@ $(async () => {
     new DnDFileController(async (file) => {
       await leftCollection.addPageFromFile(file);
     });
+
+    // add file or template to left panel
+    let checker = new NameChecker();
+    $('#newButton').on('change', (evt) => {
+      let value = evt.target.value;
+      evt.target.value = '';
+      if (value==='loadFile') { // from file
+        $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=false/>')
+          .on('change', async (evt) => {
+            let file = $(evt.target)[0].files[0];
+            await leftCollection.addPageFromFile(file);
+          })
+          .click();
+      } else { // from template
+        let format = TEMPLATES[value];
+        let filepath = checker.checkName(format.defaultName, format.extension);
+        if (!filepath) return; // BRAKE
+        new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
+          .addTo(leftCollection);
+      }
+    });
     
     // create Worker
     let builderWorker = new Worker(new URL('./build.js', import.meta.url));
@@ -197,4 +235,27 @@ function updateWindowHeight(){
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
     rightCollection.pagesStorage
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());
+}
+
+function NameChecker() {
+  let counter = 0;
+
+  this.checkName = function checkName(defaultName, extension) {
+    // prompt for module name
+    let fileName = defaultName || `module${counter++}${extension}`;
+    for (let repeat = true, title = 'File name'; repeat;) {
+      fileName = window.prompt(title, fileName);
+      if (fileName===null) {
+        repeat = false;
+      } else if (leftCollection.pagesStorage.has(fileName)) {
+        title = `"${fileName}" already exist. Choose another name.`;
+      } else if (path.extname(fileName)!==extension) {
+        title = `"${fileName}" has wrong extension "${path.extname(fileName)}".`;
+      } else {
+        repeat = false;
+      }
+    }
+  
+    return fileName;
+  }
 }

@@ -1,9 +1,9 @@
 # TODO list
 
 - Dot support
-- check extensions of files
 - hot keys for InfoPage
 - drug and drop directory
+- multiple files upload
 - Download project button
 - switch monaco themes
 ? platform.yml

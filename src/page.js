@@ -1,13 +1,6 @@
 /* global $ */
 
 // templates
-import DEFAULT_HETA_TEMPLATE from './heta-templates/default.heta.template';
-import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
-import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
-import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
-import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
-import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
-import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
 import './heta-colors';
 import './console-colors';
 import './editor-menu';
@@ -16,14 +9,12 @@ import * as path from 'path';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 const FORMATS = { // + Exports/Modules
-    json: {extension: '.json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE, type: 'application/json'}, // JSON / json
-    heta: {extension: '.heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE}, type: 'text/plain', // HetaCode / heta
-    csv: {extension: '.csv', language: 'plaintext', defaultValue: DEFAULT_CSV_TEMPLATE, type: 'text/csv'}, // Table / table
-    yaml: {extension: '.yml', language: 'yaml', defaultValue: DEFAULT_YAML_TEMPLATE, type: 'application/yaml'}, // YAML / yaml
-    sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE, type: 'application/sbml+xml'}, // SBML / sbml
-    indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta', type: 'text/plain'}, // HetaCode / heta
-    qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta', type: 'text/plain'}, // HetaCode / heta
-
+    json: {extension: '.json', language: 'json', type: 'application/json'}, // JSON / json
+    heta: {extension: '.heta', language: 'heta'}, type: 'text/plain', // HetaCode / heta
+    csv: {extension: '.csv', language: 'plaintext', type: 'text/csv'}, // Table / table
+    yaml: {extension: '.yml', language: 'yaml', type: 'application/yaml'}, // YAML / yaml
+    sbml: {extension: '.xml', language: 'xml', type: 'application/sbml+xml'}, // SBML / sbml
+    
     xlsx: {extension: '.xlsx', pageType: 'info', type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'},
     slv: {extension: '.slv', pageType: 'info', type: 'application/octet-stream'},
     txt: {extension: '.txt', language: 'plaintext', type: 'text/plain'},
@@ -42,29 +33,12 @@ const FORMATS = { // + Exports/Modules
 
 // class storing HetaEditors
 export class PagesCollection {
-    constructor(panel, newButton) {
+    constructor(panel) {
         this.panel = panel;
         this.pagesStorage = new Map();
         this.defaultPageName = undefined;
-        // set events
-        this.count = 0;
-        newButton && $(newButton).on('change', (evt) => {
-          let value = evt.target.value;
-          evt.target.value = '';
-          if (value==='loadFile') { // from file
-            $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=false/>')
-              .on('change', (evt) => this.addPageFromFile($(evt.target)[0].files[0]))
-              .click();
-          } else { // from template
-            let format = FORMATS[value];
-            let filepath = this.checkPageName(format);
-            if (!filepath) return; // BRAKE
-            new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
-              .addTo(this);
-          }
-        });
     }
-    // add page based on file
+    // for loading user files
     async addPageFromFile(file) {
       let ext = path.extname(file.name);
     
@@ -76,19 +50,20 @@ export class PagesCollection {
       }
       
       let format = FORMATS[formatName];
-      let filepath = this.checkPageName({extension: ext, defaultName: file.name});
+      let filepath = this.checkPageName(file.name, format.extension);
       if (!filepath) return; // BRAKE
       if (format.pageType==='info') {
-        var page = new InfoPage(filepath, true, false)
+        var page = new InfoPage(filepath, true, false, format.type)
             .addTo(this);
       } else {
-        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language}, true, false)
+        page = new EditorPage(filepath, {language: format.language}, true, false, format.type)
           .addTo(this);
       }
       await page.fromFile(file);
 
       return page;
     }
+    // for loading dist and session files
     async addPageFromArrayBuffer(ab, filepath, readOnly=true, deleteBtn=true, rightSide=false) {
       let ext = path.extname(filepath);
 
@@ -103,7 +78,7 @@ export class PagesCollection {
         var page = new InfoPage(filepath, deleteBtn, rightSide, format.type)
             .addTo(this);
       } else {
-        page = new EditorPage(filepath, {value: format.defaultValue, language: format.language, readOnly: readOnly}, deleteBtn, rightSide, format.type)
+        page = new EditorPage(filepath, {language: format.language, readOnly: readOnly}, deleteBtn, rightSide, format.type)
           .addTo(this);
       }
 
@@ -114,14 +89,22 @@ export class PagesCollection {
     get defaultPage() {
         return this.pagesStorage.get(this.defaultPageName);
     }
-    checkPageName(format) {
+    checkPageName(initialFileName, extension) {
       // prompt for module name
-      let fileName = format.defaultName || `module${this.count++}${format.extension}`;
-      let title = 'File name';
-      do {
-          fileName = window.prompt(title, fileName);
-          title = `"${fileName}" already exist. Choose another name.`
-      } while (this.pagesStorage.has(fileName))
+      let fileName = initialFileName;
+
+      for (let title = 'File name';;) {
+        fileName = window.prompt(title, fileName);
+        if (fileName===null) {
+          break;
+        } else if (this.pagesStorage.has(fileName)) {
+          title = `"${fileName}" already exist. Choose another name.`;
+        } else if (path.extname(fileName)!==extension) {
+          title = `"${fileName}" has wrong extension "${path.extname(fileName)}".`;
+        } else {
+          break;
+        }
+      }
 
       return fileName;
     }
