@@ -1,8 +1,7 @@
 # TODO list
 
-- set mime-types for files
 - Dot support
-- red contur for Drag and Drop
+- check extensions of files
 - hot keys for InfoPage
 - drug and drop directory
 - Download project button

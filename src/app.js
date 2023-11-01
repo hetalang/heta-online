@@ -122,7 +122,7 @@ $(async () => {
     });
 
     // Drag and Drop
-    new DnDFileController('body', async (file) => {
+    new DnDFileController(async (file) => {
       await leftCollection.addPageFromFile(file);
     });
     
