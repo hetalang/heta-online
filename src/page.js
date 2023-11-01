@@ -132,7 +132,7 @@ export class Page {
     }
 
     // add events to module
-    $(this.navigationButton).find('.hetaModuleName').on('click', () => this.show());
+    $(this.navigationButton).on('click', () => this.show());
     if (deleteBtn) {
         $('<span class="hetaModuleCloseBtn">&nbsp; &times;</span>')
             .appendTo(this.navigationButton)

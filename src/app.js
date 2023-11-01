@@ -151,7 +151,7 @@ $(async () => {
       let value = evt.target.value;
       evt.target.value = '';
       if (value==='loadFile') { // from file
-        $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=true/>')
+        $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx,.xls,.sbml" multiple=true/>')
           .on('change', async (evt) => {
             for (let file of $(evt.target)[0].files) {
               await leftCollection.addPageFromFile(file);
