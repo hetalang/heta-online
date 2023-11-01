@@ -28,7 +28,11 @@ const FORMATS = { // + Exports/Modules
     r: {extension: '.r', language: 'r', type: 'text/plain'}, // R
     c: {extension: '.c', language: 'c', type: 'text/plain'}, // C
     html: {extension: '.html', language: 'html', type: 'text/html'}, // HTML
-    log: {extension: '.log', language: 'plaintext', type: 'text/plain'}, 
+    log: {extension: '.log', language: 'plaintext', type: 'text/plain'},
+
+    dot: {extension: '.dot', language: 'dot', type: 'text/plain'},
+    xls: {extension: '.xls', pageType: 'info', type: 'application/vnd.ms-excel'},
+
 };
 
 // class storing HetaEditors

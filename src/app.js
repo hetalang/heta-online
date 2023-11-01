@@ -146,11 +146,11 @@ $(async () => {
     });
 
     // add file or template to left panel
-    let checker = new NameChecker();
+    let checker = new NameChecker(); 
     $('#newButton').on('change', (evt) => {
       let value = evt.target.value;
       evt.target.value = '';
-      if (value==='loadFile') { // from file
+      if (value==='loadFiles') { // from file
         $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx,.xls,.sbml" multiple=true/>')
           .on('change', async (evt) => {
             for (let file of $(evt.target)[0].files) {
