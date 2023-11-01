@@ -31,7 +31,7 @@ export default function DnDFileController(onDropCallback) {
       //el_.classList.remove('dropping');
       m.style.display = 'none';
   
-      onDropCallback(evt.dataTransfer.files[0]);
+      onDropCallback(evt.dataTransfer.files);
     };
   
     el_.addEventListener('dragenter', this.dragenter, false);

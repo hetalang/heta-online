@@ -139,8 +139,10 @@ $(async () => {
     });
 
     // Drag and Drop
-    new DnDFileController(async (file) => {
-      await leftCollection.addPageFromFile(file);
+    new DnDFileController(async (files) => {
+      for (let file of files) {
+        await leftCollection.addPageFromFile(file);
+      }
     });
 
     // add file or template to left panel
@@ -149,10 +151,11 @@ $(async () => {
       let value = evt.target.value;
       evt.target.value = '';
       if (value==='loadFile') { // from file
-        $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=false/>')
+        $('<input type="file" accept=".yml,.yaml,.json,.xml,.heta,.txt,.csv,.xlsx" multiple=true/>')
           .on('change', async (evt) => {
-            let file = $(evt.target)[0].files[0];
-            await leftCollection.addPageFromFile(file);
+            for (let file of $(evt.target)[0].files) {
+              await leftCollection.addPageFromFile(file);
+            }
           })
           .click();
       } else { // from template

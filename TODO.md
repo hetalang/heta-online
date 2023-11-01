@@ -3,7 +3,6 @@
 - Dot support
 - hot keys for InfoPage
 - drug and drop directory
-- multiple files upload
 - Download project button
 - switch monaco themes
 ? platform.yml
