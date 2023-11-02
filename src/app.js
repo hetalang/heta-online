@@ -7,8 +7,13 @@ import './dropping.css';
 
 import * as path from 'path';
 import JSZip from 'jszip';
-import { PagesCollection, EditorPage, ConsolePage, InfoPage } from './page';
+import { PagesCollection } from './pages-collection';
 import DnDFileController from './drug-and-drop';
+
+import EditorPage from './editor-page';
+import ConsolePage from './console-page';
+//import InfoPage from './info-page';
+//import VizPage from './viz-page';
 
 // templates
 import DEFAULT_HETA_TEMPLATE from './heta-templates/default.heta.template';
