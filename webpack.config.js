@@ -64,7 +64,7 @@ const config = {
                 test: /\.(njk|nunjucks)$/,
                 loader: 'nunjucks-loader',
                 options: {
-                    config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env',
+                    config: __dirname + '/nunjucks.config.js', // '/node_modules/heta-compiler/src/nunjucks-env',
                     //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile'
                 }
             }
