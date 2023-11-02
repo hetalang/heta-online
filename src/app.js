@@ -6,6 +6,7 @@ import 'font-awesome/css/font-awesome.min.css';
 import './dropping.css';
 
 import * as path from 'path';
+import JSZip from 'jszip';
 import { PagesCollection, EditorPage, ConsolePage, InfoPage } from './page';
 import DnDFileController from './drug-and-drop';
 
@@ -137,6 +138,7 @@ $(async () => {
         loadDefaultPages();
       }
     });
+    $('#hc-download').on('click', () => downloadPlatform());
 
     // Drag and Drop
     new DnDFileController(async (files) => {
@@ -222,6 +224,30 @@ $(async () => {
       });
     });
 });
+
+async function downloadPlatform() {
+  const zip = new JSZip();
+
+  [...leftCollection.pagesStorage].map(([filepath, page]) => {
+    let ab = page.getArrayBuffer();
+    let filenameRelative = path.relative('/', filepath);
+    zip.file(filenameRelative, ab, {binary: false});
+  });
+  [...rightCollection.pagesStorage].map(([filepath, page]) => {
+    let ab = page.getArrayBuffer();
+    let filenameRelative = path.relative('/', filepath);
+    zip.file(filenameRelative, ab, {binary: false});
+  });
+
+  let blob = await zip.generateAsync({type: 'blob'});
+
+  let url = window.URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = 'platform.zip';
+  a.click();
+}
 
 function updateWindowHeight(){
     let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();

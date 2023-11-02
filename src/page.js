@@ -220,12 +220,14 @@ export class EditorPage extends Page {
 
       return this;
     }
+    /*
     getFile() {
       let text = this.monacoEditor.getValue();
       let file = new File([text], this.id, {type: this.type});
 
       return file;
     }
+    */
     getArrayBuffer() {
       let text = this.monacoEditor.getValue();
 
@@ -275,7 +277,9 @@ export class InfoPage extends Page {
   async getArrayBuffer() {
     return await this._sourceFile.arrayBuffer();
   }
+  /*
   getFile() {
     return this._sourceFile;
   }
+  */
 }

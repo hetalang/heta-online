@@ -1,7 +1,6 @@
 # TODO list
 
 - hot keys for InfoPage
-- ! Download project button
 - switch monaco themes
 - nice css styles
 - support of smartphones
@@ -9,6 +8,7 @@
     https://github.com/danklammer/bytesize-icons
 - load files with full path
 - dot files visualization
+- use JSZip for storing in localStorage
 ? Matlab language support
 ? dot language support
 ? platform.yml

@@ -54,6 +54,7 @@
     "font-awesome": "^4.7.0",
     "heta-compiler": "^0.6.20",
     "jquery": "^3.7.0",
+    "jszip": "^3.10.1",
     "monaco-editor": "^0.41.0",
     "semver": "^7.5.4",
     "w3-css": "^4.1.0"
