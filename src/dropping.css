@@ -2,6 +2,16 @@
     /*border: 10px dotted red;*/
 }
 
+svg {
+    margin: 0.1em;
+    overflow: visible;
+}
+
+svg#i-lightning {
+    margin: 0em;
+    overflow: visible;
+}
+
 #modalDnD .w3-modal-content {
     width: 90%;
     height: 600px;

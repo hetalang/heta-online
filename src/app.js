@@ -2,7 +2,7 @@
 
 // Add styles and fonts
 import 'w3-css/w3.css';
-import 'font-awesome/css/font-awesome.min.css';
+//import 'font-awesome/css/font-awesome.min.css'; // font-awesome pkg, https://github.com/danklammer/bytesize-icons
 import './dropping.css';
 
 import * as path from 'path';

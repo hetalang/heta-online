@@ -52,7 +52,6 @@
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
     "ajv": "^8.12.0",
-    "font-awesome": "^4.7.0",
     "heta-compiler": "^0.6.20",
     "jquery": "^3.7.0",
     "jszip": "^3.10.1",
