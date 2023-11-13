@@ -14,3 +14,5 @@
 ? file content manager
 
 ## Errors
+
+- external load for platform.json + DnD
