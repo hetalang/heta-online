@@ -1,5 +1,6 @@
 # TODO list
 
+- not to display output.log
 - hot keys for InfoPage
 - switch monaco themes
 - nice css styles
@@ -7,6 +8,7 @@
 - load files with full path
 - dot files visualization
 - use JSZip for storing in localStorage
+- optimize XLSX deps for smaller size
 ? Matlab language support
 ? dot language support
 ? platform.yml

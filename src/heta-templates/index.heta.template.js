@@ -12,14 +12,16 @@ export default `/*
 p1 @Record .= 1;
 
 // exports
-#export { format: JSON, filepath: output };
-//#export { format: YAML, filepath: output };
-//#export { format: XLSX, filepath: table, omitRows: 3, splitByClass: true };
-//#export { format: SBML, filepath: sbml, version: L2V4 };
-//#export { format: SLV, filepath: model, eventsOff: false };
-#export { format: DBSolve, filepath: dbsolve };
-//#export { format: Simbio, filepath: simbio };
-//#export { format: Mrgsolve, filepath: mrgsolve };
-//#export { format: Matlab, filepath: matlab };
-#export { format: Julia, filepath: julia };
+#export { format: JSON };
+#export { format: YAML };
+#export { format: XLSX, omitRows: 3, splitByClass: true };
+#export { format: SBML, version: L2V4 };
+//#export { format: SLV, eventsOff: false };
+//#export { format: DBSolve };
+//#export { format: Simbio };
+//#export { format: Mrgsolve };
+//#export { format: Matlab };
+//#export { format: HetaCode };
+#export { format: Dot };
+#export { format: Julia };
 `;

@@ -7,7 +7,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
@@ -40,7 +39,6 @@ const config = {
             languages: ['json', 'plaintext', 'yaml', 'xml', 'markdown', 'c', 'julia', 'cpp', 'r', 'html']
         }),
         new NodePolyfillPlugin(),
-        new LodashModuleReplacementPlugin(),
         new webpack.ProvidePlugin({
             $: 'jquery'
         }),
@@ -64,7 +62,7 @@ const config = {
                 test: /\.(njk|nunjucks)$/,
                 loader: 'nunjucks-loader',
                 options: {
-                    config: __dirname + '/nunjucks.config.js', // '/node_modules/heta-compiler/src/nunjucks-env',
+                    config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env', // '/nunjucks.config.js'
                     //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile'
                 }
             }

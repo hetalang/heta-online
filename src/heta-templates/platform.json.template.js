@@ -6,7 +6,7 @@ export default `{
   "keywords": [],
   "license": "UNLICENSED",
   "contributors": [],
-  "builderVersion": "^0.6.19",
+  "builderVersion": "^0.7.0",
   "options": {
     "debug": false,
     "logs": "output.log",

@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.5
+
+- update heta-compiler to v0.7.0
+- update templates
+
 ## 0.1.4
 
 - update buttons
