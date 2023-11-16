@@ -103,7 +103,7 @@ function loadSession() {
 }
 
 function loadDefaultPages() {
-  new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, false, true)
+  new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, true, true)
     .addTo(leftCollection, true); // default page
   new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
     .addTo(leftCollection, false);

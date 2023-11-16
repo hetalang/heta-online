@@ -19,7 +19,7 @@ let contactMessage = `
  +-------------------------------------------------------------------+ 
  | Internal "Heta compiler" error, contact the developers.           | 
  | Create an issue: ${hetaCompilerPackage.bugs.url} | 
- | or mail to: ${hetaCompilerPackage.bugs.email}                                     | 
+ | or mail to: ${hetaCompilerPackage.bugs.email}                                      | 
  +-------------------------------------------------------------------+ 
 `;
 
@@ -31,6 +31,10 @@ self.onmessage = (evt) => {
 
     // create declaration
     let declarationBuffer = inputDict['/platform.json'];
+    if (!declarationBuffer) {
+        postMessage({action: 'console', value: '\n"platform.json" is not found.\nSTOP!\n\n$ '});
+        return; // BRAKE
+    }
     let declarationText = new TextDecoder('utf-8').decode(declarationBuffer);
     try {
         var declaration = JSON.parse(declarationText);
@@ -39,7 +43,7 @@ self.onmessage = (evt) => {
         postMessage({action: 'console', value: `\n\t- ${e.message}`});
         
         postMessage({action: 'console', value: '\n\n$ '});
-        return;
+        return; // BRAKE
     }
 
     // validate and set defaults
@@ -123,7 +127,9 @@ function build(inputDict, settings) { // modules, exports
     let ms = new ModuleSystem(c.logger, (filename) => {
         let arrayBuffer = inputDict[filename]; // Uint8Array
         if (!arrayBuffer) {
-            throw new Error(`Module ${filename} is not found.`);
+            let e = new Error(`Module ${filename} is not found.`);
+            e.name = 'HetaLevelError'; 
+            throw e;
         }
         let buffer = Buffer.from(arrayBuffer); // Buffer
         
