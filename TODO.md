@@ -1,5 +1,9 @@
 # TODO list
 
+- external load for platform.json + DnD
+- проверка синтаксиса platform.json
+- platform.yml
+- remember last open page
 - not to display output.log
 - hot keys for InfoPage
 - switch monaco themes
@@ -8,13 +12,10 @@
 - load files with full path
 - dot files visualization
 - use JSZip for storing in localStorage
-- optimize XLSX deps for smaller size
-? Matlab language support
-? dot language support
-? platform.yml
+? автоподсказки в heta syntax
+? Matlab highliting support
 ? console at the bottom
 ? file content manager
 
 ## Errors
 
-- external load for platform.json + DnD

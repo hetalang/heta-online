@@ -42,7 +42,7 @@ export default class Page {
       $(this.navigationButton).remove();
       $(this.editorContainer).remove();
       this._parent.pagesStorage.delete(this.id);
-      this._parent.defaultPage?.show();
+      this._parent.nextPage?.show();
     }
     addTo(pageCollection, setAsDefault=false) {
       // add to panel

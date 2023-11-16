@@ -92,8 +92,8 @@ export class PagesCollection {
 
       return page;
     }
-    get defaultPage() {
-        return this.pagesStorage.get(this.defaultPageName);
+    get nextPage() { // get the page to display next
+      return [...this.pagesStorage.values()].pop(); // return the last page in the Map
     }
     checkPageName(initialFileName, extension) {
       // prompt for module name
