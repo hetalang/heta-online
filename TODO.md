@@ -3,7 +3,6 @@
 - external load for platform.json + DnD
 - проверка синтаксиса platform.json
 - platform.yml
-- remember last open page
 - not to display output.log
 - hot keys for InfoPage
 - switch monaco themes
@@ -19,3 +18,4 @@
 
 ## Errors
 
+- No schema request service available

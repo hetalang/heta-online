@@ -23,6 +23,14 @@ let contactMessage = `
  +-------------------------------------------------------------------+ 
 `;
 
+const levels = [
+    'debug', // 0
+    'info', // 1
+    'warn', // 2
+    'error', // 3
+    'panic' // 4
+];
+
 self.onmessage = (evt) => {
     let inputDict = evt.data.files;
     // first lines in console
@@ -97,15 +105,19 @@ function build(inputDict, settings) { // modules, exports
 
     // create container and logger
     let c = new Container();
+    
     /*
     c.logger.addTransport((level, msg, opt, levelNum) => { // temporal solution, all logs to console
         console.log(`{heta-compiler} [${level}]\t${msg}`);
     });
     */
+    let minLogLevel = settings.options?.logLevel || 'info';
+    let minLevelNum = levels.indexOf(minLogLevel);
     c.logger.addTransport((level, msg, opt, levelNum) => {
         let value = `\n[${level}]\t${msg}`;
-
-        postMessage({action: 'console', value: value});
+        if (levelNum >= minLevelNum) {
+            postMessage({action: 'console', value: value});
+        }
     });
 
     // file paths
@@ -218,6 +230,7 @@ function build(inputDict, settings) { // modules, exports
         break;
       default: 
         logs = c.defaultLogs
+          .filter(x => x.levelNum >= minLevelNum)
           .map(x => `[${x.level}]\t${x.msg}`)
           .join('\n');  
       }

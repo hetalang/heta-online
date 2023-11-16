@@ -9,7 +9,7 @@ export default `{
   "builderVersion": "^0.7.0",
   "options": {
     "debug": false,
-    "logs": "output.log",
+    "logPath": "output.log",
     "logLevel": "info",
     "skipExport": false,
     "unitsCheck": false
