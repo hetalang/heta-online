@@ -1,8 +1,5 @@
 # TODO list
 
-- external load for platform.json + DnD
-- проверка синтаксиса platform.json
-- platform.yml
 - not to display output.log
 - hot keys for InfoPage
 - switch monaco themes

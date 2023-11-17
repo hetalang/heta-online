@@ -1,4 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import './platform-shemas';
 import Page from './abstract-page';
 
 export default class EditorPage extends Page {
