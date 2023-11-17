@@ -1,18 +1,19 @@
 # TODO list
 
-- not to display output.log
+- dot files visualization
 - hot keys for InfoPage
 - switch monaco themes
 - nice css styles
 - support of smartphones
 - load files with full path
-- dot files visualization
 - use JSZip for storing in localStorage
-? автоподсказки в heta syntax
+- extend info modal
+? not to display output.log
+? autocomplete in heta syntax
 ? Matlab highliting support
 ? console at the bottom
 ? file content manager
 
 ## Errors
 
-- No schema request service available
+
