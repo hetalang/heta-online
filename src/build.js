@@ -1,4 +1,4 @@
-import { Container, ModuleSystem } from 'heta-compiler/src/webpack';
+import { Container, ModuleSystem, HetaLevelError } from 'heta-compiler/src/webpack';
 import path from 'path';
 import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 import Ajv from 'ajv';
@@ -141,9 +141,7 @@ function build(inputDict, settings) { // modules, exports
     let ms = new ModuleSystem(c.logger, (filename) => {
         let arrayBuffer = inputDict[filename]; // Uint8Array
         if (!arrayBuffer) {
-            let e = new Error(`Module ${filename} is not found.`);
-            e.name = 'HetaLevelError'; 
-            throw e;
+            throw new HetaLevelError(`Module ${filename} is not found.`);
         }
         let buffer = Buffer.from(arrayBuffer); // Buffer
         
