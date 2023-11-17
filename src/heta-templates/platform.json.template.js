@@ -1,5 +1,5 @@
 export default `{
-  "$schema": "https://github.com/hetalang/heta-compiler/declaration-schema.json",
+  "$schema": "https://hetalang.github.io/heta-compiler/declaration-schema.json",
   "id": "template",
   "notes": "platform notes",
   "version": "v0.1.0",

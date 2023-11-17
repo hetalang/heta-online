@@ -5,7 +5,7 @@ monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
     validate: true,
     schemas: [
         {
-            uri: "https://github.com/hetalang/heta-compiler/declaration-schema.json",
+            uri: "https://hetalang.github.io/heta-compiler/declaration-schema.json",
             fileMatch: ['*'],
             schema: declarationSchema
         }
