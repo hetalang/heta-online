@@ -53,9 +53,13 @@
     "ajv": "^8.12.0",
     "heta-compiler": "^0.7.0",
     "jquery": "^3.7.0",
+    "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "monaco-editor": "^0.41.0",
     "semver": "^7.5.4",
     "w3-css": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

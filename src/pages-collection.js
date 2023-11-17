@@ -46,7 +46,7 @@ export class PagesCollection {
     }
     // for loading user files
     async addPageFromFile(file) {
-      let ext = path.extname(file.name);
+      let {ext, name} = path.parse(file.name);
     
       let formatName = Object.getOwnPropertyNames(FORMATS)
         .find((x) => FORMATS[x].extension === ext);
@@ -61,6 +61,9 @@ export class PagesCollection {
       if (format.pageType==='info') {
         var page = new InfoPage(filepath, true, false, format.type)
             .addTo(this);
+      } else if (name === 'platform' && ['.json', '.json5', 'yml'].indexOf(ext) ) {
+        page = new EditorPage(filepath, {language: format.language}, true, true, format.type)
+          .addTo(this);
       } else {
         page = new EditorPage(filepath, {language: format.language}, true, false, format.type)
           .addTo(this);

@@ -1,11 +1,10 @@
-import { Container, ModuleSystem, Transpot } from 'heta-compiler/src/webpack';
+import { Container, ModuleSystem } from 'heta-compiler/src/webpack';
 import path from 'path';
 import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 import Ajv from 'ajv';
 import hetaCompilerPackage from 'heta-compiler/package.json';
 import semver from 'semver';
-
-const reader = new FileReaderSync();
+import { load as yamlLoad } from 'js-yaml';
 
 let ajv = new Ajv({allErrors: true, useDefaults: true});
 ajv.addKeyword({
@@ -35,17 +34,20 @@ self.onmessage = (evt) => {
     let inputDict = evt.data.files;
     // first lines in console
     postMessage({action: 'console', value: 'heta build'});
-    postMessage({action: 'console', value: '\nRunning compilation with declaration file "/platform.json"...'});
 
-    // create declaration
-    let declarationBuffer = inputDict['/platform.json'];
+    // search declaration
+    let declarationFileName = ['/platform.json', '/platform.json5', '/platform.yml'].find((x) => inputDict[x]);
+    let declarationBuffer = inputDict[declarationFileName];
     if (!declarationBuffer) {
-        postMessage({action: 'console', value: '\n"platform.json" is not found.\nSTOP!\n\n$ '});
+        postMessage({action: 'console', value: '\n"platform.*" file is not found.\nSTOP!\n\n$ '});
         return; // BRAKE
     }
+
+    postMessage({action: 'console', value: `\nRunning compilation with declaration file "${declarationFileName}"...`});
     let declarationText = new TextDecoder('utf-8').decode(declarationBuffer);
     try {
-        var declaration = JSON.parse(declarationText);
+        //var declaration = JSON.parse(declarationText);
+        var declaration = yamlLoad(declarationText);
     } catch (e) {
         postMessage({action: 'console', value: `\nDeclaration file must be JSON formatted:`});
         postMessage({action: 'console', value: `\n\t- ${e.message}`});
