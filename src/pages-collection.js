@@ -33,7 +33,7 @@ const FORMATS = { // + Exports/Modules
     html: {extension: '.html', language: 'html', type: 'text/html'}, // HTML
     log: {extension: '.log', language: 'plaintext', type: 'text/plain'},
 
-    dot: {extension: '.dot', pageType: 'Viz', language: 'dot', type: 'text/plain'},
+    dot: {extension: '.dot', pageType: 'viz', language: 'dot', type: 'text/plain'},
     xls: {extension: '.xls', pageType: 'info', type: 'application/vnd.ms-excel'},
 };
 
@@ -85,13 +85,16 @@ export class PagesCollection {
       let format = FORMATS[formatName];
       if (format.pageType==='info') {
         var page = new InfoPage(filepath, deleteBtn, rightSide, format.type)
-            .addTo(this);
+          .addTo(this);
+      } else if (format.pageType==='viz') {
+        page = new VizPage(filepath, deleteBtn, rightSide, format.type)
+          .addTo(this);
       } else {
         page = new EditorPage(filepath, {language: format.language, readOnly: readOnly}, deleteBtn, rightSide, format.type)
           .addTo(this);
       }
 
-      page.fromArrayBuffer(ab);
+      await page.fromArrayBuffer(ab);
 
       return page;
     }
