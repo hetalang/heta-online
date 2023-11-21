@@ -2,6 +2,10 @@
     /*border: 10px dotted red;*/
 }
 
+.hetaModuleContainer svg {
+    max-width: 100%;
+}
+
 svg {
     margin: 0.1em;
     overflow: visible;

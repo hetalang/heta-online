@@ -11,7 +11,7 @@
     "build": "webpack --mode=production --node-env=production",
     "serve": "NODE_OPTIONS=--max-old-space-size=8192 webpack serve --node-env=production",
     "build:dev": "webpack --node-env=development",
-    "serve:dev": "webpack serve --node-env=development",
+    "serve:dev": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=development",
     "compile": "nunjucks-precompile --include [\"\\.hjk$\"] node_modules/heta-compiler/src/templates > src/compiled-templates.js"
   },
   "author": "Evgeny Metelkin <evgeny.metelkin@gmail.com> (https://github.com/metelkin)",

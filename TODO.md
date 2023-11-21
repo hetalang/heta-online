@@ -1,6 +1,5 @@
 # TODO list
 
-- dot: select layout, save as png, save as file
 - hot keys for InfoPage
 - switch monaco themes
 - nice css styles
