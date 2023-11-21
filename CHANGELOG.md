@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.6
+
+- autocomplete for platform.json
+- fix: remove DnD for buttons
+- dot files visualization
+
 ## 0.1.5
 
 - update heta-compiler to v0.7.0
