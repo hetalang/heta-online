@@ -3,8 +3,8 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 monaco.languages.register({id: 'heta'});
 monaco.languages.setMonarchTokensProvider('heta', {
   defaultToken: 'invalid',
-    keywords: ['include', 'type', 'with', 'namespace', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
-    //tokenPostfix: ".yaml",
+  keywords: ['abstract', 'concrete', 'namespace', 'include', 'type', 'with', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
+  //tokenPostfix: ".yaml",
   brackets: [
     { token: "delimiter.bracket", open: "{", close: "}" },
     { token: "delimiter.square", open: "[", close: "]" },
@@ -27,7 +27,7 @@ monaco.languages.setMonarchTokensProvider('heta', {
       { include: '@multilineCommentStart' },
       { include: "@whitespace" },
       [/(?=include )/, 'keyword', '@includeStatement'],
-      [/namespace /, 'keyword', '@namespaceBlock'],
+      [/((?:abstract[ \t]+|concrete[ \t]+)?namespace[ \t]+)(@idProp)/, ['keyword', 'string'], '@namespaceBlock'],
       [/block /, 'keyword', '@defaultBlock'],
       { include: "@actionStatement" },
       //[/@numberInteger(?![ \t]*\S+)/, "number"],
@@ -59,8 +59,7 @@ monaco.languages.setMonarchTokensProvider('heta', {
         ['', 'invalid', '@pop'],
     ],
     namespaceBlock: [
-      [/begin/, 'keyword', '@block'],
-      [/@idProp/, 'string'],
+      [/begin/, 'keyword', '@block']
     ],
     defaultBlock: [
       [/begin/, 'keyword', '@block'],
