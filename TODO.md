@@ -1,5 +1,6 @@
 # TODO list
 
+- better default code
 - hot keys for InfoPage
 - switch monaco themes
 - nice css styles
