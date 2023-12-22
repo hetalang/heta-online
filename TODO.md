@@ -2,7 +2,6 @@
 
 - better default code
 - hot keys for InfoPage
-- switch monaco themes
 - nice css styles
 - support of smartphones
 - load files with full path

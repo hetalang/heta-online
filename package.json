@@ -9,7 +9,7 @@
     "start": "npm run dev",
     "lint": "eslint --ext .js,.vue src",
     "build": "webpack --mode=production --node-env=production",
-    "serve": "NODE_OPTIONS=--max-old-space-size=8192 webpack serve --node-env=production",
+    "serve": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=production",
     "build:dev": "webpack --node-env=development",
     "serve:dev": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=development",
     "compile": "nunjucks-precompile --include [\"\\.hjk$\"] node_modules/heta-compiler/src/templates > src/compiled-templates.js"
@@ -51,7 +51,7 @@
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
     "ajv": "^8.12.0",
-    "heta-compiler": "github:hetalang/heta-compiler",
+    "heta-compiler": "^0.7.3",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
