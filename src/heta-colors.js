@@ -4,7 +4,7 @@ monaco.languages.register({id: 'heta'});
 monaco.languages.setMonarchTokensProvider('heta', {
   defaultToken: 'invalid',
   keywords: ['abstract', 'concrete', 'namespace', 'include', 'type', 'with', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
-  //tokenPostfix: ".yaml",
+  //tokenPostfix: ".heta",
   brackets: [
     { token: "delimiter.bracket", open: "{", close: "}" },
     { token: "delimiter.square", open: "[", close: "]" },
@@ -27,7 +27,10 @@ monaco.languages.setMonarchTokensProvider('heta', {
       { include: '@multilineCommentStart' },
       { include: "@whitespace" },
       [/(?=include )/, 'keyword', '@includeStatement'],
-      [/((?:abstract[ \t]+|concrete[ \t]+)?namespace[ \t]+)(@idProp)/, ['keyword', 'string'], '@namespaceBlock'],
+      [
+        /((?:abstract[ \t]+|concrete[ \t]+)?namespace)([ \t]+@idProp)/,
+        ['keyword', {token: 'string', next: '@namespaceBlock'}]
+      ],
       [/block /, 'keyword', '@defaultBlock'],
       { include: "@actionStatement" },
       //[/@numberInteger(?![ \t]*\S+)/, "number"],
@@ -59,6 +62,8 @@ monaco.languages.setMonarchTokensProvider('heta', {
         ['', 'invalid', '@pop'],
     ],
     namespaceBlock: [
+      { include: "@whitespace" },
+      [/;/, 'delimiter', '@pop'],
       [/begin/, 'keyword', '@block']
     ],
     defaultBlock: [

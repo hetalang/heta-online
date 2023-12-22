@@ -1,5 +1,11 @@
 # TODO list
 
+## Errors
+
+- highlight `block @Species begin end`
+
+## Updates
+
 - hot keys for InfoPage
 - nice css styles
 - support of smartphones
@@ -11,7 +17,3 @@
 ? Matlab highliting support
 ? console at the bottom
 ? file content manager
-
-## Errors
-
-- highlight namespace
