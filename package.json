@@ -5,14 +5,11 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack-dev-server",
-    "start": "npm run dev",
-    "lint": "eslint --ext .js,.vue src",
+    "start": "npm run serve:dev",
     "build": "webpack --mode=production --node-env=production",
-    "serve": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=production",
     "build:dev": "webpack --node-env=development",
-    "serve:dev": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=development",
-    "compile": "nunjucks-precompile --include [\"\\.hjk$\"] node_modules/heta-compiler/src/templates > src/compiled-templates.js"
+    "serve": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=production",
+    "serve:dev": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=development"
   },
   "author": "Evgeny Metelkin <evgeny.metelkin@gmail.com> (https://github.com/metelkin)",
   "license": "Apache-2.0",
@@ -51,7 +48,7 @@
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
     "ajv": "^8.12.0",
-    "heta-compiler": "^0.7.4",
+    "heta-compiler": "^0.8.1",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
