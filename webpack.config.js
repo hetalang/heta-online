@@ -82,7 +82,7 @@ module.exports = () => {
             minimize: true,
             minimizer: [
                 new TerserPlugin({
-                    terserOptions: {keep_classnames: true}
+                    terserOptions: {keep_classnames: true} // important because of Classes in heta-compiler, fix there first
                 }),
                 new CssMinimizerPlugin(),
             ],

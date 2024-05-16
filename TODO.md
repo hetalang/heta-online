@@ -15,5 +15,5 @@
 ? not to display output.log
 ? autocomplete in heta syntax
 ? Matlab highliting support
-? console at the bottom
+- console at the bottom
 ? file content manager

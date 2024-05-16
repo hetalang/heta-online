@@ -254,16 +254,17 @@ async function downloadPlatform() {
   a.click();
 }
 
-function updateWindowHeight(){
-    let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();
-    $('#mainDiv').height(h + 'px');
+function updateWindowHeight() {
+/*
+    //let h = document.documentElement.clientHeight - $('#topDiv').outerHeight();
+    //$('#mainDiv').height(h + 'px');
 
     let h2 = $('#mainDiv').outerHeight() - $('#leftPanel .codeNavigation').outerHeight() - 2;
     $('#leftPanel .codeContainer').height(h2 + 'px');
 
     let h3 = $('#mainDiv').outerHeight() - $('#rightPanel .codeNavigation').outerHeight() - 2;
     $('#rightPanel .codeContainer').height(h3 + 'px');
-
+*/
     // update editors
     leftCollection.pagesStorage
       .forEach((x) => $(x.editorContainer).css('display') === 'block' && x.monacoEditor?.layout());

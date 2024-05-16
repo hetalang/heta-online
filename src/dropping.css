@@ -21,3 +21,26 @@ svg#i-lightning {
     height: 600px;
     border: 5px dashed red;
 }
+
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+#topDiv {
+    min-height: 50px;
+}
+#mainDiv {
+    flex-grow: 1;
+}
+#leftPanel, #rightPanel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.codeContainer {
+    flex-grow: 1;
+}
