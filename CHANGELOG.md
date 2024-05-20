@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.7
+
+- update heta-compiler to v0.8.2
+- minor style changes
+
 ## 0.1.6
 
 - autocomplete for platform.json
