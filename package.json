@@ -17,7 +17,7 @@
     "type": "git",
     "url": "https://github.com/hetalang/heta-online.git"
   },
-  "homepage": "https://hetalang.github.io/#/heta-online/",
+  "homepage": "https://hetalang.github.io/#/heta-compiler/",
   "bugs": {
     "url": "https://github.com/hetalang/heta-online/issues",
     "email": "dev@insysbio.com"
@@ -48,7 +48,7 @@
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
     "ajv": "^8.12.0",
-    "heta-compiler": "^0.8.1",
+    "heta-compiler": "^0.8.2",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",

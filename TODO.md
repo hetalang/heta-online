@@ -7,7 +7,7 @@
 ## Updates
 
 - hot keys for InfoPage
-- nice css styles
+- better css styles
 - support of smartphones
 - load files with full path
 - use JSZip for storing in localStorage
