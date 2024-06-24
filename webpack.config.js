@@ -81,9 +81,7 @@ module.exports = () => {
         config.optimization = {
             minimize: true,
             minimizer: [
-                new TerserPlugin({
-                    terserOptions: {keep_classnames: true} // important because of Classes in heta-compiler, fix there first
-                }),
+                new TerserPlugin(),
                 new CssMinimizerPlugin(),
             ],
             splitChunks: {

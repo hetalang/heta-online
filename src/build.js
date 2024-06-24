@@ -2,7 +2,7 @@ import { Container, ModuleSystem, HetaLevelError } from 'heta-compiler/src/webpa
 import path from 'path';
 import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 import Ajv from 'ajv';
-import hetaCompilerPackage from 'heta-compiler/package.json';
+import hetaCompilerPackage from 'heta-compiler/package';
 import semver from 'semver';
 import { load as yamlLoad } from 'js-yaml';
 
