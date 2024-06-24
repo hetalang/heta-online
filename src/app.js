@@ -18,6 +18,7 @@ import ConsolePage from './console-page';
 // templates
 import DEFAULT_HETA_TEMPLATE from './heta-templates/default.heta.template';
 import QSP_UNITS_HETA_TEMPLATE from './heta-templates/qsp-units.heta.template';
+import QSP_FUNCTIONS_HETA_TEMPLATE from './heta-templates/qsp-functions.heta.template';
 import DEFAULT_JSON_TEMPLATE from './heta-templates/default.json.template';
 import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
 import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
@@ -32,6 +33,7 @@ const TEMPLATES = { // + Exports/Modules
   sbml: {extension: '.xml', language: 'xml', defaultValue: DEFAULT_XML_TEMPLATE, type: 'application/sbml+xml'}, // SBML / sbml
   indexHeta: {extension: '.heta', language: 'heta', defaultValue: INDEX_HETA_TEMPLATE, defaultName: 'index.heta', type: 'text/plain'}, // HetaCode / heta
   qspUnitsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_UNITS_HETA_TEMPLATE, defaultName: 'qsp-units.heta', type: 'text/plain'}, // HetaCode / heta
+  qspFunctionsHeta: {extension: '.heta', language: 'heta', defaultValue: QSP_FUNCTIONS_HETA_TEMPLATE, defaultName: 'qsp-functions.heta', type: 'text/plain'}, // HetaCode / heta
 };
 
 $(window).on('resize', updateWindowHeight);

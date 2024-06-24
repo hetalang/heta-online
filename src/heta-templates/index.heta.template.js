@@ -3,6 +3,7 @@ template file for creating platform
 */
 // add file with units
 //include ./qsp-units.heta;
+//include ./qsp-functions.heta;
 
 // add another files
 // include module.heta type heta;
