@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.8
+
+- update heta-compiler to v0.8.4
+- add qsp-functions.heta as a template
+
 ## 0.1.7
 
 - update heta-compiler to v0.8.2
