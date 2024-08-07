@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.1.9
+
+- update heta-compiler v0.8.6
+- `null` value
+- fix `mm` in `in qsp-units.heta`
+- solve classes problems
+
 ## 0.1.8
 
 - update heta-compiler to v0.8.4
