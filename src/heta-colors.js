@@ -3,7 +3,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 monaco.languages.register({id: 'heta'});
 monaco.languages.setMonarchTokensProvider('heta', {
   defaultToken: 'invalid',
-  keywords: ['abstract', 'concrete', 'namespace', 'include', 'type', 'with', 'begin', 'end', 'true', 'false', 'Inf', 'NaN'],
+  keywords: ['abstract', 'concrete', 'namespace', 'include', 'type', 'with', 'begin', 'end', 'true', 'false', 'Inf', 'NaN', 'null'],
   //tokenPostfix: ".heta",
   brackets: [
     { token: "delimiter.bracket", open: "{", close: "}" },
