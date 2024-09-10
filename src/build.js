@@ -1,4 +1,4 @@
-import { Container, ModuleSystem, HetaLevelError } from 'heta-compiler/src/webpack';
+import { Builder, Container, ModuleSystem, HetaLevelError } from 'heta-compiler/src/webpack';
 import path from 'path';
 import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 import Ajv from 'ajv';
@@ -105,8 +105,26 @@ function build(inputDict, settings) { // modules, exports
         constructor()
     */
 
+    let outputDict = {}; // {<filepath>: <Buffer>}
+
     // create container and logger
     let c = new Container();
+
+    let _builder = { // pseudo builder
+        container: c,
+        logger: c.logger,
+        //fileReadHandler: (fn) => {},
+        fileWriteHandler: (fn, text) => {},
+        exportArray: [],
+        export: []
+    }; // back reference
+    
+    _builder.exportClasses = {};
+    Object.entries(Builder._exportClasses).forEach(([key, _Class]) => {
+        _builder.exportClasses[key] = class extends _Class {};
+        _builder.exportClasses[key].prototype._builder = _builder;
+    });
+    c._builder = _builder;
     
     /*
     c.logger.addTransport((level, msg, opt, levelNum) => { // temporal solution, all logs to console
@@ -134,7 +152,6 @@ function build(inputDict, settings) { // modules, exports
     /*
         run()
     */
-    let outputDict = {}; // {<filepath>: <Buffer>}
     c.logger.info(`Compilation of module "${settings.importModule.source}" of type "${settings.importModule.type}"...`);
 
     // 1. Parsing
@@ -194,27 +211,11 @@ function build(inputDict, settings) { // modules, exports
         c.checkTerms();
 
         // 9. Exports
-        // save
-        if (settings.options.skipExport) {
-            c.logger.warn('Exporting skipped as stated in declaration.');
-        } else if (settings.options.juliaOnly) {
-            c.logger.warn('"Julia only" mode');
-            //this.exportJuliaOnly(); 
-            // create export without putting it to exportStorage
-            let Julia = this.container.classes['Julia'];
-            let exportItem = new Julia({
-                format: 'Julia',
-                filepath: '_julia'
-            });
+        //this.exportMany();
+        let exportElements = _builder.exportArray;
+        c.logger.info(`Start exporting to files, total: ${exportElements.length}.`);
 
-            _makeAndSave(exportItem, _distDirname, outputDict);
-        } else {
-            //this.exportMany();
-            let exportElements = [...c.exportStorage].map((x) => x[1]);
-            c.logger.info(`Start exporting to files, total: ${exportElements.length}.`);
-
-            exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname, outputDict));
-        }
+        exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname, outputDict));
       } else {
         c.logger.warn('Units checking and export were skipped because of errors in compilation.');
       }
@@ -250,7 +251,7 @@ function build(inputDict, settings) { // modules, exports
 }
 
 function _makeAndSave(exportItem, distDirectory, outputDict) {
-    let logger = exportItem._container.logger;
+    let { logger } = exportItem._builder;
     let filepath0 = path.resolve(distDirectory, exportItem.filepath); // /dist/matlab
     let msg = `Exporting to "${filepath0}" of format "${exportItem.format}"...`;
     logger.info(msg);
