@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
-    "ajv": "^8.12.0",
+    "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
     "heta-compiler": "github:hetalang/heta-compiler#rewrite-export",
     "jquery": "^3.7.0",

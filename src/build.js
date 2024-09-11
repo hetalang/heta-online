@@ -8,10 +8,7 @@ import { load as yamlLoad } from 'js-yaml';
 import ajvErrors from 'ajv-errors';
 
 let ajv = new Ajv({allErrors: true, useDefaults: true});
-ajv.addKeyword({
-    keyword: "example",
-    type: "string",
-});
+ajv.addKeyword({keyword: "example"});
 ajvErrors(ajv);
 
 //ajvErrors(ajv, {singleError: false}); // this is required for custom messages see https://ajv.js.org/packages/ajv-errors.html
