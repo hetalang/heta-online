@@ -4,7 +4,7 @@ import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json
 import Ajv from 'ajv';
 import hetaCompilerPackage from 'heta-compiler/package';
 import semver from 'semver';
-import { load as yamlLoad } from 'js-yaml';
+import YAML from 'js-yaml';
 import ajvErrors from 'ajv-errors';
 
 let ajv = new Ajv({allErrors: true, useDefaults: true});
@@ -31,7 +31,9 @@ const levels = [
 ];
 
 self.onmessage = (evt) => {
-    let inputDict = evt.data.files;
+    const inputDict = evt.data.files;
+    const outputDict = {}; // {<filepath>: <Buffer>}
+
     // first lines in console
     postMessage({action: 'console', value: 'heta build'});
 
@@ -46,27 +48,13 @@ self.onmessage = (evt) => {
     postMessage({action: 'console', value: `\nRunning compilation with declaration file "${declarationFileName}"...`});
     let declarationText = new TextDecoder('utf-8').decode(declarationBuffer);
     try {
-        //var declaration = JSON.parse(declarationText);
-        var declaration = yamlLoad(declarationText);
+        var declaration = YAML.load(declarationText);
     } catch (e) {
-        postMessage({action: 'console', value: `\nDeclaration file must be JSON formatted:`});
+        postMessage({action: 'console', value: `\nDeclaration file must be ΥΑΜL/JSON formatted:`});
         postMessage({action: 'console', value: `\n\t- ${e.message}`});
         
         postMessage({action: 'console', value: '\n\n$ '});
         return; // BRAKE
-    }
-
-    // validate and set defaults
-    let valid = validate(declaration);
-    if (!valid) { // analyze errors
-        postMessage({action: 'console', value: '\nErrors in declaration file:'});
-        validate.errors.forEach((ajvError) => {
-            let msg = `\n\t- "${ajvError.instancePath}" ${ajvError.message}`;
-            postMessage({action: 'console', value: msg});
-        });
-
-        postMessage({action: 'console', value: '\n\n$ '});
-        return;
     }
 
     // === wrong version throws, if no version stated than skip ===
@@ -80,32 +68,58 @@ self.onmessage = (evt) => {
 
     // === this part displays "send errors to developer" message ===
     try {
-        var container = build(inputDict, declaration);
-    } catch(error) {
-        //throw error;
-        postMessage({action: 'console', value: contactMessage + '\n'});
-        postMessage({action: 'console', value: error.stack});
+        let minLogLevel = declaration.options?.logLevel || 'info';
+        let minLevelNum = levels.indexOf(minLogLevel);
+        var container = build(declaration, '/', (fn) => {
+            let arrayBuffer = inputDict[fn]; // Uint8Array
+            if (!arrayBuffer) {
+                throw new HetaLevelError(`Module ${filename} is not found.`);
+            }
+            return Buffer.from(arrayBuffer); // Buffer
+        }, (fn, text) => {
+            outputDict[fn] = Buffer.from(text, 'utf-8');
+        }, [(level, msg, opt, levelNum) => {
+            let value = `\n[${level}]\t${msg}`;
+            if (levelNum >= minLevelNum) {
+                postMessage({action: 'console', value: value});
+            }
+        }]);
+    
+    } catch (error) {
+        if (error.name === 'HetaLevelError') {
+            //process.stdout.write(error.message + '\nSTOP!\n');
+            postMessage({action: 'console', value: '\n' + error.message + '\n'});
+        } else {
+            postMessage({action: 'console', value: contactMessage + '\n'});
+            postMessage({action: 'console', value: error.stack});
 
+            postMessage({action: 'console', value: '\n\n$ '});
+        }
+        
         postMessage({action: 'console', value: '\n\n$ '});
-        return;
+        
+        return; // BRAKE
     }
 
-    if (container.hetaErrors().length > 0) {
-        postMessage({action: 'console', value: '\nCompilation ERROR! See logs.'});
+    if (!container.logger.hasErrors) {
+        postMessage({action: 'finished', dict: outputDict});
     } else {
-        postMessage({action: 'console', value: '\nCompilation OK!'});
+        postMessage({action: 'stop', dict: outputDict});
     }
 
     postMessage({action: 'console', value: '\n\n$ '});
 };
 
-function build(inputDict, settings) { // modules, exports
-    let coreDirname = '/';
+function build(
+    declaration = {},
+    coreDirname = '.',
+    fileReadHandler = (fn) => { throw new Error('File read is not set for Builder'); }, // must return text
+    fileWriteHandler = (fn, text) => { throw new Error('File write is not set for Builder'); }, // must return undefined
+    transportArray = [] // Builder-level Transport
+) { // modules, export
     /*
         constructor()
     */
-
-    let outputDict = {}; // {<filepath>: <Buffer>}
 
     // create container and logger
     let c = new Container();
@@ -113,8 +127,8 @@ function build(inputDict, settings) { // modules, exports
     let _builder = { // pseudo builder
         container: c,
         logger: c.logger,
-        //fileReadHandler: (fn) => {},
-        fileWriteHandler: (fn, text) => {},
+        fileReadHandler,
+        fileWriteHandler,
         exportArray: [],
         export: []
     }; // back reference
@@ -126,55 +140,45 @@ function build(inputDict, settings) { // modules, exports
     });
     c._builder = _builder;
     
-    /*
-    c.logger.addTransport((level, msg, opt, levelNum) => { // temporal solution, all logs to console
-        console.log(`{heta-compiler} [${level}]\t${msg}`);
-    });
-    */
-    let minLogLevel = settings.options?.logLevel || 'info';
-    let minLevelNum = levels.indexOf(minLogLevel);
-    c.logger.addTransport((level, msg, opt, levelNum) => {
-        let value = `\n[${level}]\t${msg}`;
-        if (levelNum >= minLevelNum) {
-            postMessage({action: 'console', value: value});
-        }
-    });
+    c.logger.addTransport(transportArray[0]);
+
+    // validate and set defaults
+    let valid = validate(declaration);
+    if (!valid) {
+        // convert validation errors to heta errors
+        validate.errors.forEach((x) => {
+            c.logger.error(`\n\t-${x.message} (${x.dataPath})`, {type: 'BuilderError', params: x.params});
+        });
+        throw new HetaLevelError('Wrong structure of platform file.');
+    }
 
     // file paths
     let _coreDirname = path.resolve(coreDirname);
-    let _distDirname = path.resolve(coreDirname, settings.options.distDir);
-    let _metaDirname = path.resolve(coreDirname, settings.options.metaDir);
-    let _logPath = path.resolve(coreDirname, settings.options.logPath);
+    let _distDirname = path.resolve(coreDirname, declaration.options.distDir);
+    let _metaDirname = path.resolve(coreDirname, declaration.options.metaDir);
+    let _logPath = path.resolve(coreDirname, declaration.options.logPath);
 
     c.logger.info(`Heta builder of version ${hetaCompilerPackage.version} initialized in directory "${_coreDirname}"`);
-    if (settings.id) c.logger.info(`Platform id: "${settings.id}"`);
+    if (declaration.id) c.logger.info(`Platform id: "${declaration.id}"`);
 
     /*
         run()
     */
-    c.logger.info(`Compilation of module "${settings.importModule.source}" of type "${settings.importModule.type}"...`);
+    c.logger.info(`Compilation of module "${declaration.importModule.source}" of type "${declaration.importModule.type}"...`);
 
     // 1. Parsing
-    let ms = new ModuleSystem(c.logger, (filename) => {
-        let arrayBuffer = inputDict[filename]; // Uint8Array
-        if (!arrayBuffer) {
-            throw new HetaLevelError(`Module ${filename} is not found.`);
-        }
-        let buffer = Buffer.from(arrayBuffer); // Buffer
-        
-        return buffer;
-    });
-    let sourceFilepath = path.resolve(_coreDirname, settings.importModule.source);
-    let sourceType = settings.importModule.type;
-    ms.addModuleDeep(sourceFilepath, sourceType, settings.importModule);
+    let ms = new ModuleSystem(c.logger, fileReadHandler);
+    let sourceFilepath = path.resolve(_coreDirname, declaration.importModule.source);
+    let sourceType = declaration.importModule.type;
+    ms.addModuleDeep(sourceFilepath, sourceType, declaration.importModule);
 
     // 2. Modules integration
-    if (settings.options.debug) {
+    if (declaration.options.debug) {
         Object.getOwnPropertyNames(ms.moduleCollection).forEach((name) => {
             let relPath = path.relative(_coreDirname, name + '.json');
             let absPath = path.join(_metaDirname, relPath);
             let str = JSON.stringify(ms.moduleCollection[name], null, 2);
-            outputDict[absPath] = Buffer.from(str, 'utf-8');
+            _builder.fileWriteHandler(absPath, str);
             c.logger.info(`Meta file was saved to ${absPath}`);
         });
     }
@@ -194,12 +198,10 @@ function build(inputDict, settings) { // modules, exports
     // 6. check circ UnitDef
     c.checkCircUnitDef();
 
-    
     // === STOP if errors ===
     if (!c.logger.hasErrors) {
-
         // 7. Units checking
-        if (settings.options.unitsCheck) {
+        if (declaration.options.unitsCheck) {
           c.logger.info('Checking unit\'s consistency.');
           c.checkUnits();
         } else {
@@ -211,47 +213,41 @@ function build(inputDict, settings) { // modules, exports
         c.checkTerms();
 
         // 9. Exports
-        //this.exportMany();
         let exportElements = _builder.exportArray;
         c.logger.info(`Start exporting to files, total: ${exportElements.length}.`);
 
-        exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname, outputDict));
+        exportElements.forEach((exportItem) => _makeAndSave(exportItem, _distDirname));
       } else {
         c.logger.warn('Units checking and export were skipped because of errors in compilation.');
       }
 
     // 10. save logs if required
     let hetaErrors = c.hetaErrors();
-    let createLog = settings.options.logMode === 'always' 
-      || (settings.options.logMode === 'error' && hetaErrors.length > 0);
+    let createLog = declaration.options.logMode === 'always' 
+      || (declaration.options.logMode === 'error' && hetaErrors.length > 0);
     if (createLog) {
-      switch (settings.options.logFormat) {
+      switch (declaration.options.logFormat) {
       case 'json':
         var logs = JSON.stringify(c.defaultLogs, null, 2);
         break;
       default: 
+        let minLogLevel = declaration.options?.logLevel || 'info';
+        let minLevelNum = levels.indexOf(minLogLevel);
         logs = c.defaultLogs
           .filter(x => x.levelNum >= minLevelNum)
           .map(x => `[${x.level}]\t${x.msg}`)
           .join('\n');  
       }
 
-      //fs.outputFileSync(_logPath, logs);
-      outputDict[_logPath] = Buffer.from(logs, 'utf-8'); // Buffer
+      _builder.fileWriteHandler(_logPath, logs);
       c.logger.info(`All logs was saved to file: "${_logPath}"`);
     }
 
-    if (!c.logger.hasErrors) {
-        postMessage({action: 'finished', dict: outputDict});
-    } else {
-        postMessage({action: 'stop', dict: outputDict});
-    }
-    
     return c;
 }
 
-function _makeAndSave(exportItem, distDirectory, outputDict) {
-    let { logger } = exportItem._builder;
+function _makeAndSave(exportItem, distDirectory) {
+    let { logger, fileWriteHandler } = exportItem._builder;
     let filepath0 = path.resolve(distDirectory, exportItem.filepath); // /dist/matlab
     let msg = `Exporting to "${filepath0}" of format "${exportItem.format}"...`;
     logger.info(msg);
@@ -261,7 +257,7 @@ function _makeAndSave(exportItem, distDirectory, outputDict) {
     mmm.forEach((out) => {
         let filepath = filepath0 + out.pathSuffix; // /dist/matlab/run.jl
         try {
-            outputDict[filepath] = out.content;
+            fileWriteHandler(filepath, out.content);
         } catch (e) {
             let msg =`Heta compiler cannot export to file: "${filepath}": \n\t- ${e.message}`;
             logger.error(msg, {type: 'ExportError'});
