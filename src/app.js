@@ -24,7 +24,7 @@ import DEFAULT_CSV_TEMPLATE from './heta-templates/default.csv.template';
 import DEFAULT_YAML_TEMPLATE from './heta-templates/default.yaml.template';
 import DEFAULT_XML_TEMPLATE from './heta-templates/default.xml.template';
 import INDEX_HETA_TEMPLATE from './heta-templates/index.heta.template';
-import PLATFORM_JSON_TEMPLATE from './heta-templates/platform.json.template';
+import PLATFORM_YML_TEMPLATE from './heta-templates/platform.yml.template';
 const TEMPLATES = { // + Exports/Modules
   json: {extension: '.json', language: 'json', defaultValue: DEFAULT_JSON_TEMPLATE, type: 'application/json'}, // JSON / json
   heta: {extension: '.heta', language: 'heta', defaultValue: DEFAULT_HETA_TEMPLATE, type: 'text/plain'}, // HetaCode / heta
@@ -89,7 +89,7 @@ function loadSession() {
     let uint8 = new Uint8Array(x.uint8.split(','));
     leftCollection.addPageFromArrayBuffer(uint8.buffer, x.filepath, x.readOnly, x.deleteBtn, x.rightSide);
   });
-  leftCollection.defaultPageName = 'platform.json';
+  leftCollection.defaultPageName = 'platform.yml';
   /*
   let rightCollectionString = localStorage.getItem('rightCollectionArray');
   let rightCollectionObject = JSON.parse(rightCollectionString);
@@ -105,7 +105,7 @@ function loadSession() {
 }
 
 function loadDefaultPages() {
-  new EditorPage('platform.json', {value: PLATFORM_JSON_TEMPLATE, language: 'json'}, true, true)
+  new EditorPage('platform.yml', {value: PLATFORM_YML_TEMPLATE, language: 'yaml'}, true, true)
     .addTo(leftCollection, true); // default page
   new EditorPage('index.heta', {value: INDEX_HETA_TEMPLATE, language: 'heta'}, true, false)
     .addTo(leftCollection, false);

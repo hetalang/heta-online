@@ -1,24 +1,12 @@
-import { Builder, Container, ModuleSystem, HetaLevelError } from 'heta-compiler/src/webpack';
-import path from 'path';
-import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
-import Ajv from 'ajv';
-import hetaCompilerPackage from 'heta-compiler/package';
-import semver from 'semver';
+import { Builder, HetaLevelError } from 'heta-compiler/src/webpack';
+import packageFile from 'heta-compiler/package';
 import YAML from 'js-yaml';
-import ajvErrors from 'ajv-errors';
-
-let ajv = new Ajv({allErrors: true, useDefaults: true});
-ajv.addKeyword({keyword: "example"});
-ajvErrors(ajv);
-
-//ajvErrors(ajv, {singleError: false}); // this is required for custom messages see https://ajv.js.org/packages/ajv-errors.html
-const validate = ajv.compile(declarationSchema);
 
 let contactMessage = `
  +-------------------------------------------------------------------+ 
  | Internal "Heta compiler" error, contact the developers.           | 
- | Create an issue: ${hetaCompilerPackage.bugs.url} | 
- | or mail to: ${hetaCompilerPackage.bugs.email}                                      | 
+ | Create an issue: ${packageFile.bugs.url} | 
+ | or mail to: ${packageFile.bugs.email}                                      | 
  +-------------------------------------------------------------------+ 
 `;
 
@@ -41,7 +29,8 @@ self.onmessage = (evt) => {
         var builder = main(evt.data.files, outputDict);
     } catch (error) {
         if (error.name === 'HetaLevelError') {
-            postMessage({action: 'console', value: 'Compilation ERROR! See logs.\n'});
+            postMessage({action: 'console', value: 'Error: ' + error.message + '\n'});
+            postMessage({action: 'console', value: 'STOP!\n'});
         } else {
             postMessage({action: 'console', value: contactMessage + '\n'});
             postMessage({action: 'console', value: error.stack});
@@ -51,54 +40,42 @@ self.onmessage = (evt) => {
         
         return; // BRAKE
     }
-
+console.log(builder)
     if (builder.container.hetaErrors().length > 0) {
+        postMessage({action: 'console', value: 'Compilation ERROR! See logs.\n'});
         postMessage({action: 'finished', dict: outputDict});
     } else {
+        postMessage({action: 'console', value: 'Compilation OK!\n'});
         postMessage({action: 'stop', dict: outputDict});
     }
 
-    postMessage({action: 'console', value: '\n\n$ '});
+    postMessage({action: 'console', value: '\n$ '});
 };
 
 function main(inputDict, outputDict) {
+    let declaration = {options: {}, importModule: {}, export: []}; // default declaration
+    
     // === read declaration file ===
     // search
-    let declarationFileName = ['/platform.json', '/platform.json5', '/platform.yml'].find((x) => inputDict[x]);
+    let declarationFileName = ['/platform.json', '/platform.yml', '/platform'].find((x) => inputDict[x]);
     let declarationBuffer = inputDict[declarationFileName];
-
-    let declaration = {options: {}, importModule: {}, export: []}; // default declaration
-
+    
     if (!declarationBuffer) {
-        postMessage({action: 'console', value: 'No declaration file, running with defaults...\n\nSTOP!\n\n$ '});
-        return; // BRAKE
+        postMessage({action: 'console', value: 'No declaration file, running with defaults...\nSTOP!\n\n$ '});
     } else {
         postMessage({action: 'console', value: `Running compilation with declaration file "${declarationFileName}"...\n`});
         let declarationText = new TextDecoder('utf-8').decode(declarationBuffer);
         try {
           let declarationFromFile = YAML.load(declarationText);
           if (typeof declarationFromFile !== 'object'){
-            throw new Error('Not an object.');
+            throw new Error('Declation must be an object type.');
           }
           Object.assign(declaration, declarationFromFile);
         } catch (e) {
-            postMessage({action: 'console', value: `\nWrong format of declaration file: \n"${e.message}"\n`});
-        
-            postMessage({action: 'console', value: '\n\n$ '});
-            return; // BRAKE
-        }
-    }
+            postMessage({action: 'console', value: e.message + '\n'});
 
-    
-    // === wrong version throws, if no version stated than skip ===
-    let satisfiesVersion = declaration.builderVersion
-        ? semver.satisfies(hetaCompilerPackage.version, declaration.builderVersion)
-        : true;
-    if (!satisfiesVersion) {
-        postMessage({action: 'console', value: `\nVersion "${declaration.builderVersion}" stated in declaration file is not supported by the builder.\n`});
-        
-        postMessage({action: 'console', value: '\n\n$ '});
-        return; // BRAKE
+            throw new HetaLevelError('Wrong format of declaration file.\n');
+        }
     }
 
     let minLogLevel = declaration?.options?.logLevel || 'info'; // set logLevel before declaration check
@@ -112,7 +89,7 @@ function main(inputDict, outputDict) {
     var builder = new Builder(declaration, '/', (fn) => {
         let arrayBuffer = inputDict[fn]; // Uint8Array
         if (!arrayBuffer) {
-            throw new HetaLevelError(`Module ${filename} is not found.`);
+            throw new HetaLevelError(`Module ${fn} is not found,`);
         }
         return Buffer.from(arrayBuffer); // Buffer
     }, (fn, text) => {
