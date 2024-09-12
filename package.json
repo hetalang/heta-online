@@ -47,11 +47,12 @@
   },
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
-    "heta-compiler": "github:hetalang/heta-compiler#rewrite-export",
+    "heta-compiler": "github:hetalang/heta-compiler#relative-paths",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
     "monaco-editor": "^0.44.0",
+    "monaco-yaml": "^5.2.2",
     "w3-css": "^4.1.0"
   },
   "engines": {

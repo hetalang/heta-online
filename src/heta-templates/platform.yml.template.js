@@ -20,8 +20,8 @@ export default `{
   export: [
     { format: JSON, omit: [], noUnitsExpr: false },
     #{ format: YAML, omit: [], noUnitsExpr: false },
-    #{ format: DBSolve, powTransform: keep, version: 26 },
-    #{ format: SLV, eventsOff: false, powTransform: keep, version: 26 },
+    #{ format: DBSolve, powTransform: keep, version: 26, groupConstBy: 'tags[0]' },
+    #{ format: SLV, eventsOff: false, powTransform: keep, version: 26, groupConstBy: 'tags[0]' },
     { format: SBML, version: L2V4 },
     #{ format: Simbio },
     #{ format: Mrgsolve },

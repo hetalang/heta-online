@@ -222,7 +222,7 @@ $(async () => {
       // save all as object {filepath1: buffer1, filepath2: buffer2, ...}
       let fileDict = {};
       for (let [filepath, page] of leftCollection.pagesStorage) {
-        fileDict['/' + filepath] = await page.getArrayBuffer(); // ArrayBuffer
+        fileDict[filepath] = await page.getArrayBuffer(); // ArrayBuffer
       }
 
       // run builder

@@ -40,7 +40,7 @@ self.onmessage = (evt) => {
         
         return; // BRAKE
     }
-console.log(builder)
+    
     if (builder.container.hetaErrors().length > 0) {
         postMessage({action: 'console', value: 'Compilation ERROR! See logs.\n'});
         postMessage({action: 'finished', dict: outputDict});
@@ -57,7 +57,7 @@ function main(inputDict, outputDict) {
     
     // === read declaration file ===
     // search
-    let declarationFileName = ['/platform.json', '/platform.yml', '/platform'].find((x) => inputDict[x]);
+    let declarationFileName = ['platform.json', 'platform.yml', 'platform'].find((x) => inputDict[x]);
     let declarationBuffer = inputDict[declarationFileName];
     
     if (!declarationBuffer) {
@@ -86,7 +86,9 @@ function main(inputDict, outputDict) {
             postMessage({action: 'console', value: value});
         }
     }
-    var builder = new Builder(declaration, '/', (fn) => {
+    
+    var builder = new Builder(declaration, '.', (fn) => {
+        
         let arrayBuffer = inputDict[fn]; // Uint8Array
         if (!arrayBuffer) {
             throw new HetaLevelError(`Module ${fn} is not found,`);
