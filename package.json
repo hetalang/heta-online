@@ -1,6 +1,6 @@
 {
   "name": "heta-online",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Web tool for converting Heta code to different languages.",
   "main": "src/index.js",
   "scripts": {
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
-    "heta-compiler": "github:hetalang/heta-compiler#relative-paths",
+    "heta-compiler": "^0.9.0",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",

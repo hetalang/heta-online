@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.1.11
+
+- update heta-compiler v0.9.0
+- use default `Builder`
+- update syntax for platform.yml, .heta
+- use relative paths for all files
+
 ## 0.1.10
 
 - update heta-compiler v0.8.7
