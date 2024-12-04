@@ -15,7 +15,7 @@ const levels = [
     'info', // 1
     'warn', // 2
     'error', // 3
-    'panic' // 4
+    'crit' // 4
 ];
 
 self.onmessage = (evt) => {
@@ -53,9 +53,13 @@ self.onmessage = (evt) => {
 };
 
 function main(inputDict, outputDict) {
-    let declaration = {options: {}, importModule: {}, export: []}; // default declaration
+    // set minimal log level
+    let logLevel = 'info';
+
+    // 0. empty declaration
+    let declaration = {options: {}, importModule: {}, export: []};
     
-    // === read declaration file ===
+    // 1. declaration from file
     // search
     let declarationFileName = ['platform.json', 'platform.yml', 'platform'].find((x) => inputDict[x]);
     let declarationBuffer = inputDict[declarationFileName];
@@ -78,15 +82,18 @@ function main(inputDict, outputDict) {
         }
     }
 
-    let minLogLevel = declaration?.options?.logLevel || 'info'; // set logLevel before declaration check
-    let minLevelNum = levels.indexOf(minLogLevel);
+    // specific transport function to output to console
+    let minLevelNum = levels.indexOf(logLevel);
     let tr1 = (level, msg, opt, levelNum) => {
         let value = `[${level}]\t${msg}\n`;
         if (levelNum >= minLevelNum) {
             postMessage({action: 'console', value: value});
         }
     }
+
+    // 2. no other source in declaration
     
+    // 3. run builder (set declaration defaults internally)
     var builder = new Builder(declaration, '.', (fn) => {
         
         let arrayBuffer = inputDict[fn]; // Uint8Array

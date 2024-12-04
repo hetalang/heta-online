@@ -10,7 +10,6 @@ export default `{
   options: {
     debug: false,
     logPath: output.log,
-    logLevel: info,
     unitsCheck: false
   },
   importModule: {
