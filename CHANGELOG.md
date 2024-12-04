@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.12
+
+- update heta-compiler v0.9.2
+- node version update
+- dependences update
+
 ## 0.1.11
 
 - update heta-compiler v0.9.0
