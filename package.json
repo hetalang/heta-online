@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
-    "heta-compiler": "^0.9.2",
+    "heta-compiler": "^0.9.3",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",

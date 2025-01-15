@@ -9,7 +9,6 @@ export default `{
   builderVersion: ^0.9.0,
   options: {
     debug: false,
-    logPath: output.log,
     unitsCheck: false
   },
   importModule: {

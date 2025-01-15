@@ -94,7 +94,7 @@ function main(inputDict, outputDict) {
     // 2. no other source in declaration
     
     // 3. run builder (set declaration defaults internally)
-    var builder = new Builder(declaration, '.', (fn) => {
+    var builder = new Builder(declaration, (fn) => {
         
         let arrayBuffer = inputDict[fn]; // Uint8Array
         if (!arrayBuffer) {
