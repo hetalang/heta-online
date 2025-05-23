@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.14
+
+- update heta-compiler v0.9.5
+- dependences update
+
 ## 0.1.13
 
 - update heta-compiler v0.9.3
