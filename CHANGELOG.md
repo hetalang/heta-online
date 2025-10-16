@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.15
+
+- safer style and scripts - remove inline
+- prepare for azure static web apps
+
 ## 0.1.14
 
 - update heta-compiler v0.9.5
