@@ -44,3 +44,8 @@ body {
 .codeContainer {
     flex-grow: 1;
 }
+
+/* Minor adjustments */
+#topContainer {
+    height: 100%;
+}

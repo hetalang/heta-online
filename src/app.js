@@ -125,6 +125,11 @@ $(async () => {
 
     updateWindowHeight();
 
+    // auxiliary events
+    //onclick="document.getElementById('modalDiv').style.display='none'"
+    $('#closeInfoBtn').on('click', () => $('#modalDiv').hide());
+
+
     // set button events
     $('#hc-version').text(hetaPackage.version);
     $('#hc-github').attr('href', 'https://github.com/hetalang/heta-online/'); // hetaPackage.repository.url

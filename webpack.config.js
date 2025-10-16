@@ -17,8 +17,8 @@ const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader
 const config = {
     entry: {
         //'jquery': './src/jquery.js', // jquery lib
-        //'app': {import: './src/app.js', dependOn: 'jquery'},
-        'app': {import: './src/app.js'},
+        'gtag-config': {import: './src/gtag-config.js'},
+        'app': {import: './src/app.js', dependOn: 'gtag-config'}, // load gtag-config first
         //'style': './src/style.js', // CSS files
     },
     devtool: 'source-map',

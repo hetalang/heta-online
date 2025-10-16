@@ -1,21 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-3D4WTJ03NM"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', 'G-3D4WTJ03NM');
-        </script>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <meta property="og:title" content="Heta compiler online" />
         <meta property="og:description" content="Online tool for Heta code compilation." />
         <meta property="og:url" content="https://heta-online.insysbio.com/" />
         <meta property="og:image" content="https://heta-online.insysbio.com/example.png" />
+
         <title>Heta compiler online</title>
     </head>
     <body ondragstart="return false;">
@@ -24,7 +16,7 @@
           <div class="w3-modal-content">
             <div class="w3-container">
               <span 
-                onclick="document.getElementById('modalDiv').style.display='none'"
+                id="closeInfoBtn"
                 class="w3-button w3-display-topright"
                 >&times;
               </span>
@@ -49,9 +41,9 @@
 
         <!-- The Header -->
         <div id="topDiv" class="w3-row">
-            <div class="w3-rest w3-deep-purple w3-display-container" style="height:100%;">
+            <div id="topContainer" class="w3-rest w3-deep-purple w3-display-container">
                 <div class="w3-display-left w3-padding" >
-                    <span class="w3-xlarge">Heta compiler <i style="font-size: 80%;">Online</i></span>
+                    <span class="w3-xlarge">Heta compiler <i class="w3-large">Online</i></span>
                 </div>
                 <div class="w3-display-right">
                   <div class="w3-bar">
@@ -87,7 +79,7 @@
         </div>
 
         <div id="mainDiv" class="w3-row">
-            <div id="leftPanel" class="w3-half w3-light-grey w3-border-right w3-border-top w3-border-deep-purple" style="border-width: 2px;">
+            <div id="leftPanel" class="w3-half w3-light-grey w3-border-right w3-border-top w3-border-deep-purple w3-border">
               <div class="w3-border-bottom w3-border-deep-purple">
                 <div class="codeNavigation w3-bar">
                   <!-- navigating elements inside -->
