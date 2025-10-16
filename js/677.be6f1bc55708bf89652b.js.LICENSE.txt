@@ -1,0 +1,45 @@
+/*!
+   *  decimal.js v10.4.3
+   *  An arbitrary-precision Decimal type for JavaScript.
+   *  https://github.com/MikeMcl/decimal.js
+   *  Copyright (c) 2022 Michael Mclaughlin <M8ch88l@gmail.com>
+   *  MIT Licence
+   */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
+
+/*! Browser bundle of nunjucks 3.2.4 (slim, only works with precompiled templates) */
+
+/*! cpexcel.js (C) 2013-present SheetJS -- http://sheetjs.com */
+
+/*! cputils.js (C) 2013-present SheetJS -- http://sheetjs.com */
+
+/*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
+
+/*! js-yaml 4.1.0 https://github.com/nodeca/js-yaml @license MIT */
+
+/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
+
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/*! sheetjs (C) 2013-present SheetJS -- http://sheetjs.com */
+
+/**
+ * @license Complex.js v2.1.1 12/05/2020
+ *
+ * Copyright (c) 2020, Robert Eisele (robert@xarg.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
+
+/**
+ * @license Fraction.js v4.3.0 20/08/2023
+ * https://www.xarg.org/2014/03/rational-numbers-in-javascript/
+ *
+ * Copyright (c) 2023, Robert Eisele (robert@raw.org)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ **/
