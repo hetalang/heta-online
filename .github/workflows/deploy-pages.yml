@@ -5,7 +5,7 @@ on:
   push:
     branches: [ master, run_* ]
 
-name: Build and Deploy
+name: Deploy Pages
 
 jobs:
   build:
