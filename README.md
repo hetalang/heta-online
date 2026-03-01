@@ -1,6 +1,6 @@
 [![Heta project](https://img.shields.io/badge/%CD%B1-Heta_project-blue)](https://hetalang.github.io/)
 [![GitHub issues](https://img.shields.io/github/issues/hetalang/heta-online.svg)](https://GitHub.com/hetalang/heta-online/issues/)
-[![Build and Deploy](https://github.com/hetalang/heta-online/actions/workflows/nodejs.yml/badge.svg)](https://github.com/hetalang/heta-online/actions/workflows/nodejs.yml)
+[![Deploy Pages](https://github.com/hetalang/heta-online/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/hetalang/heta-online/actions/workflows/deploy-pages.yml)
 [![GitHub license](https://img.shields.io/github/license/hetalang/heta-online.svg)](https://github.com/hetalang/heta-online/blob/master/LICENSE)
 
 # heta-online

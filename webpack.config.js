@@ -38,6 +38,11 @@ const config = {
         new MonacoWebpackPlugin({
             languages: ['json', 'plaintext', 'yaml', 'xml', 'markdown', 'c', 'julia', 'cpp', 'r', 'html']
         }),
+        // Some deps now import builtins as `node:crypto` etc.
+        // Strip the protocol so NodePolyfillPlugin fallbacks can resolve them.
+        new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+            resource.request = resource.request.replace(/^node:/, '');
+        }),
         new NodePolyfillPlugin(),
         new webpack.ProvidePlugin({
             $: 'jquery'
