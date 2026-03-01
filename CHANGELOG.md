@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.16
+
+- update heta-compiler to v0.9.8
+- secure updates
+
 ## 0.1.15
 
 - safer style and scripts - remove inline
