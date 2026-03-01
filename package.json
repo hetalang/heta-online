@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-transform-runtime": "^7.23.2",
     "@babel/preset-env": "^7.22.10",
     "@webpack-cli/generators": "^3.0.7",
@@ -47,7 +48,7 @@
   },
   "dependencies": {
     "@viz-js/viz": "^3.2.3",
-    "heta-compiler": "^0.9.5",
+    "heta-compiler": "^0.9.8",
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
