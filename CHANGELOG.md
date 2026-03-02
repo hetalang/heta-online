@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.1.17
+
+- update heta-compiler to v0.10.0
+
 ## 0.1.16
 
 - update heta-compiler to v0.9.8
