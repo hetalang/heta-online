@@ -11,13 +11,13 @@
     "serve": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=production",
     "serve:dev": "set NODE_OPTIONS=--max-old-space-size=4000&& webpack serve --node-env=development"
   },
-  "author": "Evgeny Metelkin <evgeny.metelkin@gmail.com> (https://github.com/metelkin)",
+  "author": "Evgeny Metelkin <evgeny.metelkin@gmail.com> (https://metelkin.me/)",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/hetalang/heta-online.git"
   },
-  "homepage": "https://hetalang.github.io/#/heta-compiler/",
+  "homepage": "https://hetalang.github.io/heta-compiler/",
   "bugs": {
     "url": "https://github.com/hetalang/heta-online/issues",
     "email": "dev@insysbio.com"
@@ -52,8 +52,8 @@
     "jquery": "^3.7.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
-    "monaco-editor": "^0.54.0",
-    "monaco-yaml": "^5.2.2",
+    "monaco-editor": "^0.55.1",
+    "monaco-yaml": "^5.4.1",
     "w3-css": "^4.1.0"
   },
   "engines": {

@@ -2,7 +2,7 @@
 
 const path = require('path');
 const webpack = require('webpack');
-//const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
@@ -32,6 +32,7 @@ const config = {
         host: 'localhost',
     },
     plugins: [
+        // Learn more about plugins from https://webpack.js.org/configuration/plugins/
         new HtmlWebpackPlugin({
             template: 'src/index.html',
         }),
@@ -47,7 +48,14 @@ const config = {
         new webpack.ProvidePlugin({
             $: 'jquery'
         }),
-        // Learn more about plugins from https://webpack.js.org/configuration/plugins/
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: path.resolve(__dirname, 'node_modules/heta-compiler/src/builder/declaration-schema.json'),
+                    to: path.resolve(__dirname, 'dist/declaration-schema.json'),
+                },
+            ],
+        }),
     ],
     module: {
         rules: [

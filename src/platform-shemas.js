@@ -1,20 +1,12 @@
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-//import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
-//import { configureMonacoYaml } from 'monaco-yaml';
-
-monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-    validate: true,
-    enableSchemaRequest: true
-});
-
 /*
-configureMonacoYaml(monaco, {
-    enableSchemaRequest: true, // XXX: Does not work
-    //hover: true, // Enable hover information
-    //completion: true, // Enable auto-completion
-    validate: true, // Enable validation
-    //format: true, // Enable formatting
-});
+  This block is responsible for configuring the Monaco Editor to support JSON and YAML schemas.
+*/
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { jsonDefaults } from 'monaco-editor/esm/vs/language/json/monaco.contribution';
+
+import { configureMonacoYaml } from 'monaco-yaml';
+
+//import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
 
 window.MonacoEnvironment = {
     getWorker(moduleId, label) {
@@ -30,4 +22,21 @@ window.MonacoEnvironment = {
       }
     }
 };
+
+jsonDefaults.setDiagnosticsOptions({
+    validate: true,
+    enableSchemaRequest: true
+});
+
+// This part is for the YAML language schema support
+// This highlights the wrong lines in the editor.
+// Currently is temporarily disabled because of errors.
+/*
+configureMonacoYaml(monaco, {
+    enableSchemaRequest: true, // XXX: Does not work
+    //hover: true, // Enable hover information
+    //completion: true, // Enable auto-completion
+    validate: true, // Enable validation
+    //format: true, // Enable formatting
+});
 */
