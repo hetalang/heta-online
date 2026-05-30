@@ -7,7 +7,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 module.exports = (env, argv) => {
@@ -22,6 +21,9 @@ module.exports = (env, argv) => {
             //'style': './src/style.js', // CSS files
         },
         devtool: 'source-map',
+        cache: {
+            type: 'filesystem',
+        },
         output: {
             path: path.resolve(__dirname, 'dist'),
             filename: 'js/[name].[contenthash].js',
@@ -65,11 +67,12 @@ module.exports = (env, argv) => {
             rules: [
                 {
                     test: /\.(js|jsx)$/i,
+                    include: path.resolve(__dirname, 'src'),
                     loader: 'babel-loader',
                 },
                 {
                     test: /\.css$/i,
-                    use: [stylesHandler,'css-loader','css-minify'],
+                    use: [stylesHandler, 'css-loader'],
                 },
                 {
                     test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
@@ -103,7 +106,7 @@ module.exports = (env, argv) => {
         config.optimization = {
             minimize: true,
             minimizer: [
-                new TerserPlugin(),
+                '...',
                 new CssMinimizerPlugin(),
             ],
             splitChunks: {
