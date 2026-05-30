@@ -10,82 +10,91 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
-const isProduction = process.env.NODE_ENV == 'production';
+module.exports = (env, argv) => {
+    const isProduction = argv.mode === 'production';
+    const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader';
 
-const stylesHandler = isProduction ? MiniCssExtractPlugin.loader : 'style-loader';
-
-const config = {
-    entry: {
-        //'jquery': './src/jquery.js', // jquery lib
-        'gtag-config': {import: './src/gtag-config.js'},
-        'app': {import: './src/app.js', dependOn: 'gtag-config'}, // load gtag-config first
-        //'style': './src/style.js', // CSS files
-    },
-    devtool: 'source-map',
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'js/[name].[contenthash].js',
-        //libraryTarget: 'umd',
-    },
-    devServer: {
-        open: true,
-        host: 'localhost',
-    },
-    plugins: [
-        // Learn more about plugins from https://webpack.js.org/configuration/plugins/
-        new HtmlWebpackPlugin({
-            template: 'src/index.html',
-        }),
-        new MonacoWebpackPlugin({
-            languages: ['json', 'plaintext', 'yaml', 'xml', 'markdown', 'c', 'julia', 'cpp', 'r', 'html']
-        }),
-        // Some deps now import builtins as `node:crypto` etc.
-        // Strip the protocol so NodePolyfillPlugin fallbacks can resolve them.
-        new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
-            resource.request = resource.request.replace(/^node:/, '');
-        }),
-        new NodePolyfillPlugin(),
-        new webpack.ProvidePlugin({
-            $: 'jquery'
-        }),
-        new CopyWebpackPlugin({
-            patterns: [
-                {
-                    from: path.resolve(__dirname, 'node_modules/heta-compiler/src/builder/declaration-schema.json'),
-                    to: path.resolve(__dirname, 'dist/declaration-schema.json'),
-                },
-            ],
-        }),
-    ],
-    module: {
-        rules: [
-            {
-                test: /\.(js|jsx)$/i,
-                loader: 'babel-loader',
-            },
-            {
-                test: /\.css$/i,
-                use: [stylesHandler,'css-loader','css-minify'],
-            },
-            {
-                test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
-                type: 'asset',
-            },
-            {
-                test: /\.(njk|nunjucks)$/,
-                loader: 'nunjucks-loader',
-                options: {
-                    config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env', // '/nunjucks.config.js'
-                    //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile'
-                }
-            }
-            // Add your rules for custom modules here
-            // Learn more about loaders from https://webpack.js.org/loaders/
+    const config = {
+        entry: {
+            //'jquery': './src/jquery.js', // jquery lib
+            'gtag-config': {import: './src/gtag-config.js'},
+            'app': {import: './src/app.js', dependOn: 'gtag-config'}, // load gtag-config first
+            //'style': './src/style.js', // CSS files
+        },
+        devtool: 'source-map',
+        output: {
+            path: path.resolve(__dirname, 'dist'),
+            filename: 'js/[name].[contenthash].js',
+            //libraryTarget: 'umd',
+        },
+        devServer: {
+            open: true,
+            host: 'localhost',
+        },
+        plugins: [
+            // Learn more about plugins from https://webpack.js.org/configuration/plugins/
+            new HtmlWebpackPlugin({
+                template: 'src/index.html',
+            }),
+            new MonacoWebpackPlugin({
+                languages: ['json', 'plaintext', 'yaml', 'xml', 'markdown', 'c', 'julia', 'cpp', 'r', 'html']
+            }),
+            // Some deps now import builtins as `node:crypto` etc.
+            // Strip the protocol so NodePolyfillPlugin fallbacks can resolve them.
+            new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+                resource.request = resource.request.replace(/^node:/, '');
+            }),
+            new NodePolyfillPlugin({
+                excludeAliases: ['Buffer'],
+            }),
+            new webpack.ProvidePlugin({
+                $: 'jquery',
+                Buffer: [require.resolve('buffer/'), 'Buffer'],
+                process: require.resolve('process/browser')
+            }),
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: path.resolve(__dirname, 'node_modules/heta-compiler/src/builder/declaration-schema.json'),
+                        to: path.resolve(__dirname, 'dist/declaration-schema.json'),
+                    },
+                ],
+            }),
         ],
-    },
-};
+        module: {
+            rules: [
+                {
+                    test: /\.(js|jsx)$/i,
+                    loader: 'babel-loader',
+                },
+                {
+                    test: /\.css$/i,
+                    use: [stylesHandler,'css-loader','css-minify'],
+                },
+                {
+                    test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
+                    type: 'asset',
+                },
+                {
+                    test: /\.(njk|nunjucks)$/,
+                    loader: 'nunjucks-loader',
+                    options: {
+                        config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env', // '/nunjucks.config.js'
+                        //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile'
+                    }
+                }
+                // Add your rules for custom modules here
+                // Learn more about loaders from https://webpack.js.org/loaders/
+            ],
+        },
+        resolve: {
+            fallback: {
+                buffer: require.resolve('buffer/'),
+                process: require.resolve('process/browser'),
+            },
+        },
+    };
 
-module.exports = () => {
     if (isProduction) {
         config.mode = 'production';
         
