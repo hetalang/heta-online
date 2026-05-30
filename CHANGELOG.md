@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.1.19
+
+- update heta-compiler to v0.11.1
+- require Node.js 22
+- update webpack toolchain and browser polyfills
+- speed up rebuilds with webpack filesystem cache
+
 ## 0.1.18
 
 - update heta-compiler to v0.11.0
