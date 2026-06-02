@@ -8,9 +8,9 @@
 _This is a web application for converting from Heta modeling platforms into different modeling formats and software._
 Heta online is based on [heta-compiler](https://github.com/hetalang/heta-compiler) node library and command line tool.
 
-The application can be tested on the page: <https://heta-online.insysbio.com>.
+The application can be tested on the page: <https://heta-online.insysbio.com> or alternatively the development version is available at <https://hetalang.github.io/heta-online>.
 
-To read the full documentation on Heta language, visit the Heta project homepage: <https://hetalang.github.io/#>.
+To read the full documentation on Heta language, visit the Heta project homepage: <https://hetalang.github.io>.
 
 ## building
 

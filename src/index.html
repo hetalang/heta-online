@@ -21,11 +21,34 @@
                 class="w3-button w3-display-topright"
                 >&times;
               </span>
-              <h2>Info</h2>
+              <h2>Heta compiler online</h2>
               <p id="errMessage" class="w3-text-red"></p>
-              <p><i>This is a web application for converting from Heta modeling platforms into different modeling formats and software.</i></p>
-              <p>To read more about Heta follow the <a href="https://hetalang.github.io/#/" target="_blank">Heta project</a>.</p>
-              <p>Heta online is serverless app, i.e. <strong>it does not upload code</strong> to the server.</p>
+              <p><i>Online editor for Heta models: write platform files on the left, build them in the browser, and inspect generated exports on the right.</i></p>
+
+              <h4>Quick start</h4>
+              <ul>
+                <li>Edit <strong>platform.yml</strong> to describe the platform and outputs.</li>
+                <li>Write the model in <strong>index.heta</strong> or add more <strong>*.heta</strong>, <strong>*.csv</strong>, <strong>*.json</strong>, <strong>*.yml</strong>, and <strong>*.xml</strong> files from <strong>NEW</strong>.</li>
+                <li>Use <i>include</i> statements to connect files inside <strong>index.heta</strong>.</li>
+                <li>Press the lightning button
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="18" height="18" fill="yellow" stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" style="vertical-align: text-bottom;">
+                    <path d="M18 13 L26 2 8 13 14 19 6 30 24 19 Z" />
+                  </svg>
+                  to compile the platform. Build logs appear in <strong>CONSOLE</strong>; generated files appear in the right panel.</li>
+              </ul>
+
+              <h4>Useful controls</h4>
+              <ul>
+                <li><strong>Ctrl+S</strong> downloads the current editor file.</li>
+                <li>The workspace is restored from the browser session when you return to the page.</li>
+                <li>The download button saves the current project and generated files as a zip archive.</li>
+                <li>The trash button resets the workspace to the initial template.</li>
+                <li>You can drag and drop local files or folders into the page.</li>
+              </ul>
+
+              <h4>Notes</h4>
+              <p>Compilation runs locally in your browser. Heta online is a serverless app, so it <strong>does not upload code</strong> to a server.</p>
+              <p>To learn the language and platform format, see the <a href="https://hetalang.github.io/#/" target="_blank">Heta project documentation</a>.</p>
               <p class="w3-right"><a href="https://insysbio.com" target="_blank">InSysBio CY</a></p>
             </div>
           </div>
