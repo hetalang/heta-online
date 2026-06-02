@@ -1,4 +1,4 @@
-import { Builder, HetaLevelError } from 'heta-compiler/src/webpack';
+import { Builder, HetaLevelError } from 'heta-compiler/web';
 import packageFile from 'heta-compiler/package';
 import YAML from 'js-yaml';
 

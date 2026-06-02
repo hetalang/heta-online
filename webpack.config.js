@@ -6,7 +6,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 module.exports = (env, argv) => {
@@ -41,14 +40,6 @@ module.exports = (env, argv) => {
             new MonacoWebpackPlugin({
                 languages: ['json', 'plaintext', 'yaml', 'xml', 'markdown', 'c', 'julia', 'cpp', 'r', 'html']
             }),
-            // Some deps now import builtins as `node:crypto` etc.
-            // Strip the protocol so NodePolyfillPlugin fallbacks can resolve them.
-            new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
-                resource.request = resource.request.replace(/^node:/, '');
-            }),
-            new NodePolyfillPlugin({
-                excludeAliases: ['Buffer'],
-            }),
             new webpack.ProvidePlugin({
                 $: 'jquery',
                 Buffer: [require.resolve('buffer/'), 'Buffer'],
@@ -78,14 +69,6 @@ module.exports = (env, argv) => {
                     test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
                     type: 'asset',
                 },
-                {
-                    test: /\.(njk|nunjucks)$/,
-                    loader: 'nunjucks-loader',
-                    options: {
-                        config: __dirname + '/node_modules/heta-compiler/src/nunjucks-env', // '/nunjucks.config.js'
-                        //quiet: true // Don't show the 'Cannot configure nunjucks environment before precompile'
-                    }
-                }
                 // Add your rules for custom modules here
                 // Learn more about loaders from https://webpack.js.org/loaders/
             ],
@@ -93,7 +76,11 @@ module.exports = (env, argv) => {
         resolve: {
             fallback: {
                 buffer: require.resolve('buffer/'),
+                path: require.resolve('path-browserify'),
                 process: require.resolve('process/browser'),
+                stream: false,
+                os: false,
+                util: require.resolve('util/'),
             },
         },
     };
