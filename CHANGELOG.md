@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.20
+
+- update heta-compiler to v0.12.0
+- use compiled templates
+- update webpack build
+
 ## 0.1.19
 
 - update heta-compiler to v0.11.1
