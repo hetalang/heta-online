@@ -17,6 +17,7 @@ export default `{
   },
   export: [
     { format: JSON, omit: [], noUnitsExpr: false },
+    { format: DynMS },
     #{ format: YAML, omit: [], noUnitsExpr: false },
     #{ format: DBSolve, powTransform: keep, version: 26, groupConstBy: 'tags[0]' },
     #{ format: SLV, eventsOff: false, powTransform: keep, version: 26, groupConstBy: 'tags[0]' },
