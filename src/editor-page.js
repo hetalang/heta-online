@@ -11,11 +11,25 @@ export default class EditorPage extends Page {
           //automaticLayout: true
         }, monacoOptions)
 
+        // Monaco creates anonymous in-memory models by default. Give the platform
+        // declaration a stable URI so monaco-yaml can associate it with its schema.
+        if (id === 'platform.yml') {
+          this.monacoModel = monaco.editor.createModel(
+            _monacoOptions.value || '',
+            _monacoOptions.language || 'yaml',
+            monaco.Uri.parse('file:///platform.yml')
+          );
+          delete _monacoOptions.value;
+          delete _monacoOptions.language;
+          _monacoOptions.model = this.monacoModel;
+        }
+
         this.monacoEditor = monaco.editor.create(this.editorContainer, _monacoOptions);
         this.monacoEditor._page = this; // XXX: bad solution
     }
     delete() {
       this.monacoEditor.dispose();
+      this.monacoModel?.dispose();
       super.delete();
     }
     addTo(pageCollection, setAsDefault=false) {

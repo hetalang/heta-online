@@ -6,20 +6,25 @@ import { jsonDefaults } from 'monaco-editor/esm/vs/language/json/monaco.contribu
 
 import { configureMonacoYaml } from 'monaco-yaml';
 
-//import declarationSchema from 'heta-compiler/src/builder/declaration-schema.json';
+// heta-compiler does not export this file through its package entry points.
+import declarationSchema from '../node_modules/heta-compiler/src/builder/declaration-schema.json';
 
-window.MonacoEnvironment = {
-    getWorker(moduleId, label) {
-      switch (label) {
-        case 'editorWorkerService':
-          return new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker', import.meta.url))
-        case 'yaml':
-          return new Worker(new URL('monaco-yaml/yaml.worker', import.meta.url));
-        case 'json':
-          return new Worker(new URL('monaco-editor/esm/vs/language/json/json.worker', import.meta.url));
-        default:
-          throw new Error(`Unknown label ${label}`);
-      }
+const PLATFORM_SCHEMA_URI = 'https://hetalang.github.io/heta-compiler/declaration-schema.json';
+
+// monaco-yaml's worker manager still passes createData/label/moduleId here.
+// Monaco 0.55 expects a Worker instance instead, otherwise it silently falls
+// back to an editor-only worker which has no YAML language-service methods.
+const yamlMonaco = {
+    ...monaco,
+    editor: {
+        ...monaco.editor,
+        createWebWorker({createData}) {
+            const worker = new Worker(new URL('monaco-yaml/yaml.worker', import.meta.url));
+            worker.postMessage('ignore');
+            worker.postMessage(createData);
+
+            return monaco.editor.createWebWorker({worker});
+        }
     }
 };
 
@@ -28,15 +33,18 @@ jsonDefaults.setDiagnosticsOptions({
     enableSchemaRequest: true
 });
 
-// This part is for the YAML language schema support
-// This highlights the wrong lines in the editor.
-// Currently is temporarily disabled because of errors.
-/*
-configureMonacoYaml(monaco, {
-    enableSchemaRequest: true, // XXX: Does not work
-    //hover: true, // Enable hover information
-    //completion: true, // Enable auto-completion
-    validate: true, // Enable validation
-    //format: true, // Enable formatting
+// Apply the compiler schema directly rather than requesting it from the network.
+// This keeps validation and completions available offline and avoids CORS failures
+// in the YAML worker.
+configureMonacoYaml(yamlMonaco, {
+    completion: true,
+    hover: true,
+    validate: true,
+    schemas: [
+        {
+            uri: PLATFORM_SCHEMA_URI,
+            fileMatch: ['**/platform.yml'],
+            schema: declarationSchema
+        }
+    ]
 });
-*/

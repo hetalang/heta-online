@@ -48,7 +48,7 @@
     "js-yaml": "^4.2.0",
     "jszip": "^3.10.1",
     "monaco-editor": "^0.55.1",
-    "monaco-yaml": "^5.5.0",
+    "monaco-yaml": "^5.5.1",
     "w3-css": "^4.1.0"
   },
   "engines": {
