@@ -1,9 +1,5 @@
 # TODO list
 
-## Errors
-
-- highlight `block @Species begin end`
-
 ## Updates
 
 - better css styles

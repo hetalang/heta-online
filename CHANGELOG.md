@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.21
+
+- update heta-compiler to v0.12.1
+- platform.yml validation and autocomplete
+- fix Heta comments highlighting
+
 ## 0.1.20
 
 - update heta-compiler to v0.12.0
