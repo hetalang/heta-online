@@ -111,7 +111,7 @@ monaco.languages.setMonarchTokensProvider('heta', {
       { include: "@flowScalars" },
       { include: "@flowNumber" },
       [
-        /[^\},]+/,
+        /(?:\/(?![/*])|[^\},\/])+/,
         {
           cases: {
             //"@keywords": "keyword",
