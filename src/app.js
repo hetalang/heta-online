@@ -133,7 +133,7 @@ $(async () => {
     // set button events
     $('#hc-version').text(hetaPackage.version);
     $('#hc-github').attr('href', 'https://github.com/hetalang/heta-online/'); // hetaPackage.repository.url
-    //$('#hc-homepage').attr('href', 'https://hetalang.github.io/#/'); // hetaPackage.homepage
+    //$('#hc-homepage').attr('href', 'https://hetalang.github.io/'); // hetaPackage.homepage
     $('#hc-info').on('click', () => $('#modalDiv').show());
     $('#hc-clean').on('click', () => {
       let isOk = window.confirm('You are about to reset the platform to the initial state and delete all progress. Are you sure?');

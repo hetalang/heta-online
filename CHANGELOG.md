@@ -1,8 +1,13 @@
 # Change Log
 
+## 0.1.23
+
+- update heta-compiler to v0.12.3
+
 ## 0.1.22
 
 - update heta-compiler to v0.12.2
+- fix security velnurability
 
 ## 0.1.21
 
